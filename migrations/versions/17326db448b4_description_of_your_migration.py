@@ -54,6 +54,16 @@ def upgrade():
     sa.ForeignKeyConstraint(['TeamID'], ['teams.TeamID'], ),
     sa.PrimaryKeyConstraint('PlayerID')
     )
+    op.create_table(
+        'user',
+        sa.Column('id', sa.Integer, primary_key=True),
+        sa.Column('username', sa.String(50), nullable=False, unique=True),
+        sa.Column('email', sa.String(120), nullable=False, unique=True),
+        sa.Column('password', sa.String(200), nullable=False),
+        sa.Column('role', sa.String(50), nullable=False),
+        sa.Column('created_at', sa.DateTime, server_default=sa.func.now(), nullable=False),
+        sa.Column('updated_at', sa.DateTime, server_default=sa.func.now(), onupdate=sa.func.now(), nullable=False)
+    )
     # ### end Alembic commands ###
 
 

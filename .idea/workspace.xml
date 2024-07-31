@@ -4,24 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="82ad31be-d8ee-40cb-97a7-0b5b321576d5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/migrations/versions/141ed05bfbf6_fixtures_model2.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/migrations/versions/d9f9d2f78b72_added_availibility.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/styles/user.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/admin/allocate_staff.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/admin/staff_positions.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/availability.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/my_allocations.html" afterDir="false" />
+    <list default="true" id="82ad31be-d8ee-40cb-97a7-0b5b321576d5" name="Changes" comment="Going to Docker">
+      <change afterPath="$PROJECT_DIR$/Dockerfile.init-script" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dockerfile.migrate" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dockerfile.web" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/init.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/decorators.py" beforeDir="false" afterPath="$PROJECT_DIR$/decorators.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/versions/17326db448b4_description_of_your_migration.py" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/versions/17326db448b4_description_of_your_migration.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/styles/admin.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/styles/admin.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin/fixtures.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/fixtures.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin/new_fixture.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/new_fixture.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +29,7 @@
         <option value="Python Script" />
         <option value="HTML File" />
         <option value="Dockerfile" />
+        <option value="SQL File" />
       </list>
     </option>
   </component>
@@ -52,7 +47,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="main" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -63,12 +58,22 @@
     &quot;assignee&quot;: &quot;monty23monty&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/monty23monty/MKLTV.git&quot;,
-    &quot;accountId&quot;: &quot;df7d7333-2734-41ad-9194-3169ed6cb6f6&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/monty23monty/MKLTV.git",
+    "accountId": "df7d7333-2734-41ad-9194-3169ed6cb6f6"
+  },
+  "recentNewPullRequestHead": {
+    "server": {
+      "useHttp": false,
+      "host": "github.com",
+      "port": null,
+      "suffix": null
+    },
+    "owner": "monty23monty",
+    "repository": "MKLTV"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -87,7 +92,7 @@
     "Flask server.MKL FLASK.executor": "Run",
     "Python.app.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "#1 on Docker-setup",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "C:/Users/leohe/PycharmProjects/MKL FLASK/static/styles",
     "node.js.detected.package.eslint": "true",
@@ -179,8 +184,17 @@
       <workItem from="1722342513259" duration="70000" />
       <workItem from="1722374791078" duration="10722000" />
       <workItem from="1722432767276" duration="483000" />
-      <workItem from="1722433758897" duration="5646000" />
+      <workItem from="1722433758897" duration="13017000" />
     </task>
+    <task id="LOCAL-00001" summary="Going to Docker">
+      <option name="closed" value="true" />
+      <created>1722440263216</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1722440263216</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -188,9 +202,11 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="Going to Docker" />
+    <option name="LAST_COMMIT_MESSAGE" value="Going to Docker" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MKL_FLASK$MKL_FLASK.coverage" NAME="MKL FLASK Coverage Results" MODIFIED="1720621349308" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/MKL_FLASK$app.coverage" NAME="app Coverage Results" MODIFIED="1722433780322" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/MKL_FLASK$app.coverage" NAME="app Coverage Results" MODIFIED="1722442112241" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>
