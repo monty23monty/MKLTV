@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>My Allocations</h1>
+<div class="allocations-table-container">
+    <div class="allocations-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Home Team</th>
+                    <th>Away Team</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Position</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for allocation in allocations %}
+                <tr>
+                    <td>{{ fixtures[allocation.fixture_id].home_team.TeamName }}</td>
+                    <td>{{ fixtures[allocation.fixture_id].away_team.TeamName }}</td>
+                    <td>{{ fixtures[allocation.fixture_id].Date.split(' ')[0] }}</td>
+                    <td>{{ fixtures[allocation.fixture_id].Date.split(' ')[1] }}</td>
+                    <td>{{ positions[allocation.position_id].name }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

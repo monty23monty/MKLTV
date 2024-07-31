@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
       rel="stylesheet"
-      href="{{ url_for('static',filename='styles/admin.css') }}"
+      href="{{ url_for('static',filename='styles/user.css') }}"
     />
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}" type="image/x-icon">
   </head>
@@ -15,16 +15,10 @@
     <div class="container">
       <div class="sidebar">
         <div class="sidebar-header">MKL Matchnight Controller</div>
-        <div class="sidebar-subheader">Admin</div>
+        <div class="sidebar-subheader">Staff</div>
         <ul>
-          <li><a href="{{  url_for('register')  }}">Register Users</a></li>
-          <li><a href="{{  url_for('users')  }}">View Users</a></li>
-            <li><a href="{{ url_for('fixtures') }}">Fixtures</a></li>
-            <li><a href="{{ url_for('teams') }}">Teams</a></li>
-            <li><a href="{{ url_for('new_player') }}">Add Players</a></li>
-            <li><a href="{{ url_for('new_fixture') }}">Add Fixtures</a></li>
-            <li><a href="{{ url_for('staff_positions') }}">Staff Positions</a></li>
-            <li><a href="{{ url_for('allocate_staff') }}">Allocate Staff</a></li>
+          <li><a href="{{ url_for("availability") }}">Availability</a> </li>
+            <li><a href="{{ url_for("my_allocations") }}">My Games</a></li>
         </ul>
         <div class="home-container">
             <a href="{{ url_for('home')}}" class="home-button">Home</a>

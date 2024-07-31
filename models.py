@@ -83,10 +83,20 @@ class StaffPosition(db.Model):
 class FixtureStaff(db.Model):
     __tablename__ = 'fixture_staff'
     id = db.Column(db.Integer, primary_key=True)
-    fixture_id = db.Column(db.Integer, db.ForeignKey('games.GameID'), nullable=False)
+    fixture_id = db.Column(db.Integer, db.ForeignKey('fixtures.GameID'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     position_id = db.Column(db.Integer, db.ForeignKey('staff_positions.id'), nullable=False)
 
-    fixture = db.relationship('Game', backref=db.backref('fixture_staff', cascade='all, delete-orphan'))
+    fixture = db.relationship('Fixture', backref=db.backref('fixture_staff', cascade='all, delete-orphan'))
     user = db.relationship('User', backref=db.backref('fixture_staff', cascade='all, delete-orphan'))
     position = db.relationship('StaffPosition', backref=db.backref('fixture_staff', cascade='all, delete-orphan'))
+
+
+class UserAvailability(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    fixture_id = db.Column(db.Integer, db.ForeignKey('fixtures.GameID'), nullable=False)
+    available = db.Column(db.Boolean, default=True)
+
+    user = db.relationship('User', backref=db.backref('availabilities', cascade='all, delete-orphan'))
+    fixture = db.relationship('Fixture', backref=db.backref('availabilities', cascade='all, delete-orphan'))

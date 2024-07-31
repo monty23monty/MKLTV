@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h1>Create Staff Position</h1>
+<div class="form-container">
+    <form method="POST" class="form">
+        {{ form.hidden_tag() }}
+        <label for="name">Position Name:</label>
+        {{ form.name(class_="form-input") }}
+        <button type="submit" class="form-button">Create Position</button>
+    </form>
+</div>
+<h2>Existing Positions</h2>
+<div class="positions-list-container">
+    <ul class="positions-list">
+        {% for position in positions %}
+        <li class="position-item">{{ position.name }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

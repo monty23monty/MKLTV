@@ -1,20 +1,40 @@
-{% extends "admin/base.html" %}
-
+{% extends 'admin/base.html' %}
 {% block content %}
-<h1>Create New Fixture</h1>
 <div class="form-container">
-    <form method="POST" class="form">
-        {{ form.hidden_tag() }}
-        <label for="DateTime">Date and Time:</label>
-        {{ form.DateTime(class_="form-input", id="datetime-input") }}
-        <label for="Location">Location:</label>
-        {{ form.Location(class_="form-input", id="location-input") }}
-        <label for="HomeTeamID">Home Team:</label>
-        {{ form.HomeTeamID(class_="form-input", id="home-team-input") }}
-        <label for="AwayTeamID">Away Team:</label>
-        {{ form.AwayTeamID(class_="form-input", id="away-team-input") }}
-        <button type="submit" class="form-button">Create Fixture</button>
+    <h1>Create New Fixture</h1>
+    <form action="{{ url_for('new_fixture') }}" method="post" class="fixture-form">
+        <div class="form-group">
+            <label for="home_team">Home Team:</label>
+            <select name="home_team" id="home_team" class="form-control">
+                {% for team in teams %}
+                <option value="{{ team.TeamID }}">{{ team.TeamName }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="away_team">Away Team:</label>
+            <select name="away_team" id="away_team" class="form-control">
+                {% for team in teams %}
+                <option value="{{ team.TeamID }}">{{ team.TeamName }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="date">Date:</label>
+            <input type="date" name="date" id="date" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="time">Time:</label>
+            <input type="time" name="time" id="time" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="location">Location:</label>
+            <select name="location" id="location" class="form-control">
+                <option value="Home">Home</option>
+                <option value="Away">Away</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Fixture</button>
     </form>
-    <a href="{{ url_for('fixtures') }}" class="teams-button">Back to Fixtures</a>
 </div>
 {% endblock %}
