@@ -1,0 +1,41 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title></title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static',filename='styles/admin.css') }}"
+    />
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}" type="image/x-icon">
+  </head>
+  <body>
+    <div class="container">
+      <div class="sidebar">
+        <div class="sidebar-header">MKL Matchnight Controller</div>
+        <div class="sidebar-subheader">Admin</div>
+        <ul>
+          <li><a href="{{  url_for('register')  }}">Register Users</a></li>
+          <li><a href="{{  url_for('users')  }}">View Users</a></li>
+            <li><a href="{{ url_for('fixtures') }}">Fixtures</a></li>
+            <li><a href="{{ url_for('teams') }}">Teams</a></li>
+            <li><a href="{{ url_for('new_player') }}">Add Players</a></li>
+            <li><a href="{{ url_for('new_fixture') }}">Add Fixtures</a></li>
+        </ul>
+        <div class="home-container">
+            <a href="{{ url_for('home')}}" class="home-button">Home</a>
+            </div>
+        <div class="logout-container">
+            <a href="{{  url_for("logout")}}" class="logout-button">Logout</a>
+          </div>
+        </div>
+        <div class="content">
+
+        {% block content %}
+        {% endblock %}
+      </div>
+    </div>
+  </body>
+</html>

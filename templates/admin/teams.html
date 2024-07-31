@@ -1,0 +1,14 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h1>Teams</h1>
+<div class="teams-container">
+    <a href="{{ url_for('new_team') }}" class="teams-button">Create New Team</a>
+    <ul>
+        {% for team in teams %}
+        <li class="teams-item">
+            <a href="{{ url_for('team_detail', team_id=team.TeamID) }}" class="teams-button">{{ team.TeamName }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

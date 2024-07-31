@@ -1,0 +1,20 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h1>Edit Fixture</h1>
+<div class="form-container">
+    <form method="POST" class="form">
+        {{ form.hidden_tag() }}
+        <label for="DateTime">Date and Time:</label>
+        {{ form.DateTime(class_="form-input", id="datetime-input") }}
+        <label for="Location">Location:</label>
+        {{ form.Location(class_="form-input", id="location-input") }}
+        <label for="HomeTeamID">Home Team:</label>
+        {{ form.HomeTeamID(class_="form-input", id="home-team-input") }}
+        <label for="AwayTeamID">Away Team:</label>
+        {{ form.AwayTeamID(class_="form-input", id="away-team-input") }}
+        <button type="submit" class="form-button">Update Fixture</button>
+    </form>
+    <a href="{{ url_for('fixtures') }}" class="teams-button">Back to Fixtures</a>
+</div>
+{% endblock %}

@@ -1,0 +1,360 @@
+@font-face {
+    font-family: 'Proxima Nova Bold';
+    src: url('../fonts/Bold.otf') format('opentype');
+}
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Proxima Nova Bold', sans-serif;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Proxima Nova Bold', sans-serif;
+
+}
+
+.sidebar {
+    height: 100%;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #000000;
+    color: #fff;
+    transition: all 0.3s;
+}
+
+.sidebar-header {
+    padding: 20px;
+    background: #000000;
+    color: #d8b95a;
+    text-align: center;
+    border-bottom: 1px solid #fff;
+    font-size: 1.8em;
+}
+
+.sidebar-subheader {
+    padding: 10px;
+    background: #000000;
+    color: #d8b95a;
+    text-align: center;
+    border-bottom: 1px solid #fff;
+    font-size: 1.5em;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    margin-bottom: 50px;
+}
+
+.sidebar ul li {
+    border-bottom: 1px solid #fff;
+    text-align: center;
+    transition: background-color 0.3s ease; /* Transition for hover effect */
+}
+
+.sidebar ul li a {
+    display: block; 
+    padding: 15px; 
+    color: #fff;
+    text-decoration: none; 
+    transition: color 0.3s ease; 
+}
+
+.sidebar ul li a:hover, .sidebar ul li a:focus {
+    background-color: #333; 
+    color: #d8b95a;
+}
+
+.logout-container {
+    position: absolute;
+    bottom: 0;
+    width: 100%; 
+  }
+  
+
+  .logout-button {
+    display: block;
+    padding: 15px;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    border-top: 1px solid #fff;
+  }
+  
+
+  .logout-button:hover {
+    background-color: #333;
+    color: #d8b95a; 
+    }
+
+.home-container {
+    position: absolute;
+    bottom: 49;
+    width: 100%; 
+  }
+  
+  .home-button {
+    display: block;
+    padding: 15px;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    border-top: 1px solid #fff;
+  }
+  
+
+  .home-button:hover {
+    background-color: #333;
+    color: #d8b95a; 
+    }
+.home-button {
+    display: block;
+    padding: 15px;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    border-top: 1px solid #fff;
+  }
+  
+
+  .home-button:hover {
+    background-color: #333;
+    color: #d8b95a; 
+    }
+
+.form {
+    width: 80%;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.form input[type="text"], .form input[type="password"], .form input[type="email"] {
+    width: 100%;
+    height: 50px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: large;
+}
+
+.form input[type="submit"] {
+    width: 100%;
+    height: 50px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    margin: 10px 0;
+    font-size: large;
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.form input[type="submit"]:hover {
+    background-color: #333;
+    color: #d8b95a;
+}
+
+.form select {
+    width: 100%;
+    height: 50px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: large;
+}
+
+.user {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 80%;
+    height: 50px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px;
+    font-size: large;
+}
+
+.user .user-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 80%;
+    height: 50px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: large;
+}
+
+.user .user-row .user-cell {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 80%;
+    height: 50px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: large;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    width: calc(100% - 250px);
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.fixtures-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 80%;
+}
+
+.fixtures-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.fixtures-container table th {
+    background-color: #000000;
+    color: #d8b95a;
+    padding: 10px;
+    border: 1px solid #000;
+    font-size: large;
+}
+
+.fixtures-container table td {
+    padding: 10px;
+    border: 1px solid #000;
+    text-align: center;
+    vertical-align: middle;
+    font-size: large;
+}
+
+.fixtures-table table {
+    width: 100%; /* Ensures the table takes the full width of its container */
+}
+
+.fixtures-table th, .fixtures-table td {
+    text-align: center; /* Adjust based on your preference */
+    vertical-align: middle;
+    padding: 8px; /* Provides padding within the cells */
+    border-bottom: 1px solid #ccc; /* Adds a subtle border to each row for clarity */
+}
+
+.fixtures-table input[type="text"], .fixtures-table input[type="date"], .fixtures-table button {
+    width: 100%; /* Makes the input fill the cell */
+    box-sizing: border-box; /* Includes padding and border in the width */
+    border: none; /* Removes the border */
+    padding: 8px; /* Adds some padding inside the input */
+    margin: 0; /* Removes any default margin */
+    height: 100%; /* Optional: Adjust height as needed */
+    background: transparent; /* Makes the input transparent */
+    color: inherit; /* Inherits the text color from the parent */
+    font-style: italic;
+}
+
+.fixtures-table button {
+    background-color: #fff; /* Example button color, change as needed */
+    font-family: proxima-nova-bold, sans-serif; /* Example font family, change as needed */
+    color: black;
+    text-align: center;
+    cursor: pointer;
+}
+
+.fixtures-table button:hover {
+    background-color: #0000002a; /* Darker shade for hover effect */
+}
+
+.teams-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.teams-item {
+    list-style-type: none;
+    margin: 10px 0;
+}
+
+.teams-button {
+    display: block;
+    padding: 15px;
+    color: #fff;
+    background-color: #000;
+    text-align: center;
+    text-decoration: none;
+    border: 1px solid #fff;
+    margin: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.teams-button:hover {
+    background-color: #333;
+    color: #d8b95a;
+}
+
+.form-container {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.form-input {
+    width: 100%;
+    height: 50px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: large;
+}
+
+.form-button {
+    width: 100%;
+    height: 50px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    margin: 10px 0;
+    font-size: large;
+    background-color: #000;
+    color: #fff;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.form-button:hover {
+    background-color: #333;
+    color: #d8b95a;
+}
+
+.team-detail-container {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="82ad31be-d8ee-40cb-97a7-0b5b321576d5" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/MKL FLASK.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/decorators.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/forms.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/README" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/alembic.ini" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/env.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/script.py.mako" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/versions/17326db448b4_description_of_your_migration.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/versions/a7972207163c_fixtures_model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/versions/e50f7671ae0d_staff_alocations.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/fonts/Bold.otf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/fonts/regular.otf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/images/favicon.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/images/login_image.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/styles/admin.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/styles/home.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/base.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/edit_fixture.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/edit_player.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/fixtures.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/new_fixture.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/new_player.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/new_team.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/register.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/schedule.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/team_detail.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/teams.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/users.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/registration/base.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/registration/login.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/registration/register.html" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Flask Main" />
+        <option value="Python Script" />
+        <option value="HTML File" />
+      </list>
+    </option>
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="2j3fuBAdpU3K1qqvbL4fVXRTvO6" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Flask server.MKL FLASK.executor": "Run",
+    "Python.app.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/leohe/PycharmProjects/MKL FLASK/static",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\static" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\static" />
+      <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\templates\admin" />
+      <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\templates\registration" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.app">
+    <configuration name="app" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="MKL FLASK" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (MKL FLASK)" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="MKL FLASK" type="Python.FlaskServer">
+      <module name="MKL FLASK" />
+      <option name="target" value="$PROJECT_DIR$/app.py" />
+      <option name="targetType" value="PATH" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (MKL FLASK)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Flask server.MKL FLASK" />
+      <item itemvalue="Python.app" />
+    </list>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.18034.82" />
+        <option value="bundled-python-sdk-975db3bf15a3-2767605e8bc2-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.18034.82" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="82ad31be-d8ee-40cb-97a7-0b5b321576d5" name="Changes" comment="" />
+      <created>1720620900872</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1720620900872</updated>
+      <workItem from="1720620902225" duration="6831000" />
+      <workItem from="1721038429791" duration="180000" />
+      <workItem from="1721038623284" duration="2683000" />
+      <workItem from="1722342513259" duration="70000" />
+      <workItem from="1722374791078" duration="10722000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/MKL_FLASK$MKL_FLASK.coverage" NAME="MKL FLASK Coverage Results" MODIFIED="1720621349308" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/MKL_FLASK$app.coverage" NAME="app Coverage Results" MODIFIED="1722429168811" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+  </component>
+</project>
