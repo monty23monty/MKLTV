@@ -456,8 +456,8 @@ body {
     cursor: pointer;
 }
 
-.form-container {
-    max-width: 500px;
+.availability-container {
+    max-width: 800px;
     margin: 0 auto;
     padding: 20px;
     border: 1px solid #000; /* Black border */
@@ -465,32 +465,45 @@ body {
     background-color: #f9f9f9;
 }
 
-.form-container h1 {
+.availability-container h1 {
     text-align: center;
     margin-bottom: 20px;
     color: #d8b95a; /* Gold text color */
 }
 
-.fixture-form {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    margin-bottom: 5px;
-    color: #000; /* Black text color */
-}
-
-.form-control {
+.month-divider {
+    background-color: #d8b95a; /* Gold background */
+    color: #000; /* Black text */
     padding: 10px;
-    border: 1px solid #ccc;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 20px;
     border-radius: 5px;
+}
+
+.fixtures-table {
     width: 100%;
-    box-sizing: border-box;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.fixtures-table thead {
+    background-color: #000; /* Black background */
+    color: #d8b95a; /* Gold text color */
+}
+
+.fixtures-table th, .fixtures-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #000; /* Black border */
+}
+
+.fixtures-table th {
+    text-align: center;
+}
+
+.fixtures-table td {
+    text-align: center;
 }
 
 .btn {

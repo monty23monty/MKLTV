@@ -1,0 +1,137 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h1>Allocate Staff to Fixture</h1>
+<div class="form-container">
+    <form method="POST" class="form" id="allocation-form">
+        {{ form.hidden_tag() }}
+        <label for="fixture_id">Fixture:</label>
+        <select name="fixture_id" id="fixture_id" class="form-input" onchange="updateUsers()">
+            {% for fixture in form.fixture_id.choices %}
+            <option value="{{ fixture[0] }}">{{ fixture[1] }}</option>
+            {% endfor %}
+        </select>
+        <label for="user_id">User:</label>
+        <select name="user_id" id="user_id" class="form-input">
+            <option value="0">Select Fixture First</option>
+        </select>
+        <label for="position_id">Position:</label>
+        {{ form.position_id(class="form-input") }}
+        <button type="submit" class="form-button">Assign Staff</button>
+    </form>
+</div>
+
+<h2>Existing Allocations</h2>
+<div class="allocations-table-container">
+    <div class="allocations-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Home Team</th>
+                    <th>Away Team</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    {% for position in positions %}
+                        <th>{{ position.name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for fixture in fixtures %}
+                <tr>
+                    <td>{{ fixture.home_team.TeamName }}</td>
+                    <td>{{ fixture.away_team.TeamName }}</td>
+                    <td>{{ fixture.Date.split(' ')[0] }}</td>
+                    <td>{{ fixture.Date.split(' ')[1] }}</td>
+                    {% for position in positions %}
+                        <td>
+                            {% if allocation_table[fixture.GameID][position.id] %}
+                                <a href="#" class="allocation-link" data-fixture-id="{{ fixture.GameID }}" data-user-id="{{ allocation_table[fixture.GameID][position.id]['user_id'] }}" data-position-id="{{ position.id }}">{{ allocation_table[fixture.GameID][position.id]['username'] }}</a>
+                            {% else %}
+                                ---
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="allocationModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Manage Allocation</h2>
+        <form id="modalForm" method="POST">
+            {{ form.hidden_tag() }}
+            <input type="hidden" id="modal-fixture-id" name="fixture_id">
+            <input type="hidden" id="modal-user-id" name="user_id">
+            <input type="hidden" id="modal-position-id" name="position_id">
+            <div class="form-group">
+                <label for="new_position_id">New Position</label>
+                <select id="modal-new-position-id" name="new_position_id" class="form-input">
+                    {% for position in positions %}
+                        <option value="{{ position.id }}">{{ position.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="form-button">Move</button>
+            <button type="button" id="removeButton" class="form-button">Remove</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function updateUsers() {
+    var fixture_id = document.getElementById('fixture_id').value;
+    fetch(`/get_available_users?fixture_id=${fixture_id}`)
+        .then(response => response.json())
+        .then(data => {
+            var userSelect = document.getElementById('user_id');
+            userSelect.innerHTML = '';
+            data.forEach(function(user) {
+                var option = document.createElement('option');
+                option.value = user.id;
+                option.text = user.username;
+                userSelect.add(option);
+            });
+        });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    var modal = document.getElementById("allocationModal");
+    var span = document.getElementsByClassName("close")[0];
+    var removeButton = document.getElementById("removeButton");
+    var form = document.getElementById("modalForm");
+
+    document.querySelectorAll(".allocation-link").forEach(function(link) {
+        link.onclick = function() {
+            modal.style.display = "block";
+            document.getElementById("modal-fixture-id").value = this.getAttribute("data-fixture-id");
+            document.getElementById("modal-user-id").value = this.getAttribute("data-user-id");
+            document.getElementById("modal-position-id").value = this.getAttribute("data-position-id");
+            form.action = "{{ url_for('move_allocation') }}"; // Set default action to move
+            return false;
+        }
+    });
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    removeButton.onclick = function() {
+        form.action = "{{ url_for('remove_allocation') }}"; // Change action to remove
+        form.submit();
+    }
+});
+</script>
+
+{% endblock %}
