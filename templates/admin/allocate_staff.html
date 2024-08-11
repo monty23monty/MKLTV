@@ -1,22 +1,28 @@
 {% extends "admin/base.html" %}
-
 {% block content %}
 <h1>Allocate Staff to Fixture</h1>
 <div class="form-container">
-    <form method="POST" class="form" id="allocation-form">
-        {{ form.hidden_tag() }}
+    <form method="POST" action="{{ url_for('allocate_staff') }}" class="form" id="allocation-form">
         <label for="fixture_id">Fixture:</label>
-        <select name="fixture_id" id="fixture_id" class="form-input" onchange="updateUsers()">
-            {% for fixture in form.fixture_id.choices %}
-            <option value="{{ fixture[0] }}">{{ fixture[1] }}</option>
-            {% endfor %}
-        </select>
-        <label for="user_id">User:</label>
-        <select name="user_id" id="user_id" class="form-input">
-            <option value="0">Select Fixture First</option>
-        </select>
-        <label for="position_id">Position:</label>
-        {{ form.position_id(class="form-input") }}
+<select name="fixture_id" id="fixture_id" class="form-input" onchange="updateUsers()">
+    {% for fixture in fixture_choices %}
+    <option value="{{ fixture[0] }}">{{ fixture[1] }}</option>
+    {% endfor %}
+</select>
+
+<label for="user_id">User:</label>
+<select name="user_id" id="user_id" class="form-input">
+    {% for user in user_choices %}
+    <option value="{{ user[0] }}">{{ user[1] }}</option>
+    {% endfor %}
+</select>
+
+<label for="position_id">Position:</label>
+<select name="position_id" id="position_id" class="form-input">
+    {% for position in position_choices %}
+    <option value="{{ position[0] }}">{{ position[1] }}</option>
+    {% endfor %}
+</select>
         <button type="submit" class="form-button">Assign Staff</button>
     </form>
 </div>
@@ -65,7 +71,6 @@
         <span class="close">&times;</span>
         <h2>Manage Allocation</h2>
         <form id="modalForm" method="POST">
-            {{ form.hidden_tag() }}
             <input type="hidden" id="modal-fixture-id" name="fixture_id">
             <input type="hidden" id="modal-user-id" name="user_id">
             <input type="hidden" id="modal-position-id" name="position_id">
@@ -133,5 +138,4 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 </script>
-
 {% endblock %}

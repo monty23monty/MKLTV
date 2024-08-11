@@ -3,6 +3,7 @@
 <div class="form-container">
     <h1>Create New Fixture</h1>
     <form action="{{ url_for('new_fixture') }}" method="post" class="fixture-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="home_team">Home Team:</label>
             <select name="home_team" id="home_team" class="form-control">

@@ -1,12 +1,11 @@
 {% extends "admin/base.html" %}
-
 {% block content %}
 <h1>Create Staff Position</h1>
 <div class="form-container">
-    <form method="POST" class="form">
-        {{ form.hidden_tag() }}
+    <form method="POST" action="{{ url_for('staff_positions') }}" class="form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label for="name">Position Name:</label>
-        {{ form.name(class_="form-input") }}
+        <input type="text" id="name" name="name" class="form-input" required>
         <button type="submit" class="form-button">Create Position</button>
     </form>
 </div>
