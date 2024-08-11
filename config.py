@@ -6,8 +6,9 @@ from flask_migrate import Migrate
 import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://postgres:postgres@db/postgres')
+app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL',
+                                                  'postgresql://postgres:12345@localhost:5432/MKLv0.1')
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
