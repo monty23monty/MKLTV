@@ -3,7 +3,6 @@
 <h1>Create New Player</h1>
 <div class="form-container">
     <form method="POST" action="{{ url_for('new_player') }}" class="form">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label for="FirstName">First Name:</label>
         <input type="text" id="FirstName" name="FirstName" class="form-input" required>
         <label for="LastName">Last Name:</label>
