@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title></title>
+    <title>MKL Match night Controller</title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
@@ -18,17 +18,20 @@
         <div class="sidebar-subheader">Staff</div>
         <ul>
           <li><a href="{{ url_for("availability") }}">Availability</a> </li>
-            <li><a href="{{ url_for("my_allocations") }}">My Games</a></li>
+          <li><a href="{{ url_for("my_allocations") }}">My Games</a></li>
+            {% if is_admin %}
+            <li><a href="{{ url_for('admin')}}">Admin</a></li>
+            {% endif %}
+
         </ul>
         <div class="home-container">
             <a href="{{ url_for('home')}}" class="home-button">Home</a>
-            </div>
+        </div>
         <div class="logout-container">
             <a href="{{  url_for("logout")}}" class="logout-button">Logout</a>
-          </div>
         </div>
-        <div class="content">
-
+      </div>
+      <div class="content">
         {% block content %}
         {% endblock %}
       </div>

@@ -400,20 +400,21 @@ def remove_allocation():
 
 
 @app.route('/')
-def home():  # put application's code here
+def home():
     if 'user_id' in session:
         user = User.query.filter_by(id=session['user_id']).first()
-        if user.role == 'admin':
-            return redirect(url_for('admin'))
-        else:
-            return redirect(url_for('availability'))
+        if not user:
+            session.pop('user_id', None)
+            return redirect(url_for('login'))
+        is_admin = user.role == 'admin'
+        return render_template('user_homepage.html', is_admin=is_admin)
     return redirect(url_for('login'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['username'].upper()
         password = request.form['password']
 
         user = User.query.filter_by(username=username).first()
@@ -421,8 +422,7 @@ def login():
             session['user_id'] = user.id
             return redirect(url_for('admin' if user.role == 'admin' else 'home'))
         else:
-            flash('Wrong username or password')
-            return render_template('registration/login.html')
+            flash('Wrong username or password', 'danger')
 
     if 'user_id' in session:
         user = User.query.filter_by(id=session['user_id']).first()
@@ -432,7 +432,6 @@ def login():
         if user.role == 'admin':
             return redirect(url_for('admin'))
         else:
-            # The user is logged in but not an admin
             return render_template('some_user_homepage.html')
 
     return render_template('registration/login.html')
