@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
+        <title>Login - MKL Matchnight Controller</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="{{ url_for('static',filename='styles/home.css') }}">
@@ -14,23 +14,26 @@
                 <h1>Welcome to the MKL Matchnight controller</h1>
             </div>
             <div class="form">
-                <!-- Flash here -->
+                <!-- Flash messages -->
                 <div class="flash">
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        <ul>
-                            {% for message in messages %}
-                                <li>{{ message }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                {% endwith %}
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            <ul>
+                                {% for message in messages %}
+                                    <li>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endwith %}
                 </div>
-            <form action="{{ url_for('login') }}" method="POST">
-                <input type="text" name="username" placeholder="Enter your username">
-                <input type="password" name="password" placeholder="Enter your password">
-                <input type="submit" value="Submit">
-            </form>
+
+                <!-- Flask-WTF Form -->
+                <form action="{{ url_for('login') }}" method="POST">
+    <input type="text" name="username" placeholder="Enter your username" required>
+    <input type="password" name="password" placeholder="Enter your password" required>
+    <input type="submit" value="Submit">
+</form>
+
             </div>
         </div>
     </body>

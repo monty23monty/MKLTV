@@ -87,10 +87,24 @@ class FixtureStaff(db.Model):
     fixture_id = db.Column(db.Integer, db.ForeignKey('fixtures.GameID'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     position_id = db.Column(db.Integer, db.ForeignKey('staff_positions.id'), nullable=False)
+    published = db.Column(db.Boolean, default=False)
 
     fixture = db.relationship('Fixture', backref=db.backref('fixture_staff', cascade='all, delete-orphan'))
     user = db.relationship('User', backref=db.backref('fixture_staff', cascade='all, delete-orphan'))
     position = db.relationship('StaffPosition', backref=db.backref('fixture_staff', cascade='all, delete-orphan'))
+
+
+class FixtureStaffDraft(db.Model):
+    __tablename__ = 'fixture_staff_draft'
+    id = db.Column(db.Integer, primary_key=True)
+    fixture_id = db.Column(db.Integer, db.ForeignKey('fixtures.GameID'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    position_id = db.Column(db.Integer, db.ForeignKey('staff_positions.id'), nullable=False)
+    published = db.Column(db.Boolean, default=False)
+
+    fixture = db.relationship('Fixture', backref=db.backref('draft_staff', cascade='all, delete-orphan'))
+    user = db.relationship('User', backref=db.backref('draft_staff', cascade='all, delete-orphan'))
+    position = db.relationship('StaffPosition', backref=db.backref('draft_staff', cascade='all, delete-orphan'))
 
 
 class UserAvailability(db.Model):

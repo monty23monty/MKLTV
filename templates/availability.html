@@ -4,32 +4,33 @@
 <div class="availability-container">
     <h1>Select Your Availability</h1>
     <form method="POST">
-        {% for month, fixtures in fixtures_by_month.items() %}
-        <div class="month-divider">{{ month }}</div>
-        <table class="fixtures-table">
-            <thead>
-                <tr>
-                    <th>Available</th>
-                    <th>Fixture</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for fixture in fixtures %}
-                <tr>
-                    <td>
-                        <input type="checkbox" name="fixture_{{ fixture.GameID }}" {% if user_availabilities.get(fixture.GameID) %}checked{% endif %}>
-                    </td>
-                    <td>{{ fixture.home_team.TeamName }} vs {{ fixture.away_team.TeamName }}</td>
-                    <td>{{ fixture.Date.split(' ')[0] }}</td>
-                    <td>{{ fixture.Date.split(' ')[1] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% endfor %}
-        <button type="submit" class="btn btn-primary">Update Availability</button>
-    </form>
+    {% for month, fixtures in fixtures_by_month.items() %}
+    <div class="month-divider">{{ month }}</div>
+    <table class="fixtures-table">
+        <thead>
+            <tr>
+                <th>Available</th>
+                <th>Fixture</th>
+                <th>Date</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fixture in fixtures %}
+            <tr>
+                <td>
+                    <input type="checkbox" name="fixture_{{ fixture.GameID }}" {% if user_availabilities.get(fixture.GameID) %}checked{% endif %}>
+                </td>
+                <td>{{ fixture.home_team.TeamName }} vs {{ fixture.away_team.TeamName }}</td>
+                <td>{{ fixture.Date.split(' ')[0] }}</td>
+                <td>{{ fixture.Date.split(' ')[1] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Update Availability</button>
+</form>
+
 </div>
 {% endblock %}

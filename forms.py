@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, SelectField, DateField, DateTimeField
 from wtforms.fields.datetime import DateTimeLocalField
-from wtforms.validators import DataRequired
+from wtforms.fields.simple import BooleanField, PasswordField, EmailField
+from wtforms.validators import DataRequired, Email, Length
 
 
 class TeamForm(FlaskForm):
@@ -44,3 +45,27 @@ class FixtureStaffForm(FlaskForm):
     user_id = SelectField('User', coerce=int, validators=[DataRequired()])
     position_id = SelectField('Position', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Assign Staff')
+
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
+    password = PasswordField('Password', validators=[DataRequired()])
+    email = EmailField('Email', validators=[DataRequired(), Email()])
+    role = SelectField('Role', choices=[('admin', 'Admin'), ('user', 'User')], validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
+class AvailabilityForm(FlaskForm):
+    submit = SubmitField('Update Availability')
+
+    def __init__(self, fixtures, *args, **kwargs):
+        super(AvailabilityForm, self).__init__(*args, **kwargs)
+        for fixture in fixtures:
+            field_name = f'fixture_{fixture.GameID}'
+            setattr(self, field_name, BooleanField())

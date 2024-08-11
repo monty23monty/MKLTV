@@ -2,20 +2,16 @@
 {% block content %}
 <h1>Create New Team</h1>
 <div class="form-container">
-    <form method="POST" class="form">
-        {{ form.hidden_tag() }}
-        <label for="TeamName">Team Name:</label>
-        {{ form.TeamName(class_="form-input") }}
-        <label for="Abbreviation">Abbreviation:</label>
-        {{ form.Abbreviation(class_="form-input") }}
-        <label for="City">City:</label>
-        {{ form.City(class_="form-input") }}
-        <label for="CoachName">Coach Name:</label>
-        {{ form.CoachName(class_="form-input") }}
-        <label for="AssistantCoachName">Assistant Coach Name:</label>
-        {{ form.AssistantCoachName(class_="form-input") }}
-        <button type="submit" class="form-button">Create Team</button>
-    </form>
+    <form action="{{ url_for('new_team') }}" method="POST">
+    <input type="text" name="TeamName" placeholder="Enter team name" required>
+    <input type="text" name="Abbreviation" placeholder="Enter abbreviation">
+    <input type="text" name="City" placeholder="Enter city">
+    <input type="text" name="CoachName" placeholder="Enter coach name">
+    <input type="text" name="AssistantCoachName" placeholder="Enter assistant coach name">
+    <input type="submit" value="Create Team">
+</form>
+</div>
+<div class="teams-button-container">
     <a href="{{ url_for('teams') }}" class="teams-button">Back to Teams</a>
 </div>
 {% endblock %}

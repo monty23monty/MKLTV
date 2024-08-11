@@ -4,10 +4,9 @@ from hashlib import sha256
 from flask import request, render_template, flash, redirect, url_for, session, jsonify
 
 from decorators import admin_required, user_required
-from models import User, Team, Player, Fixture, FixtureStaff, StaffPosition, UserAvailability
+from models import User, Team, Player, Fixture, FixtureStaff, StaffPosition, UserAvailability, FixtureStaffDraft
 from config import bcrypt, login_manager, app
 from models import db
-from forms import TeamForm, PlayerForm, FixtureForm, FixtureStaffForm, StaffPositionForm
 from datetime import timedelta, datetime
 
 
@@ -24,21 +23,25 @@ def admin():
     return render_template('admin/index.html')
 
 
-@app.route('/admin/register', methods=['get', 'POST'])
+@app.route('/admin/register', methods=['GET', 'POST'])
 @admin_required
 def register():
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['username'].upper()
         password = request.form['password']
         email = request.form['email']
         role = request.form['role']
+
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         user = User(username=username, password=hashed_password, email=email, role=role)
         db.session.add(user)
         db.session.commit()
+
         flash('Your account has been created! You are now able to log in', 'success')
         return redirect(url_for('login'))
+
     return render_template('admin/register.html')
+
 
 
 @app.route('/admin/users')
@@ -105,16 +108,11 @@ def fixtures():
 @admin_required
 def new_fixture():
     if request.method == 'POST':
-        home_team_id = request.form['home_team']
-        away_team_id = request.form['away_team']
-        date = request.form['date']
-        time = request.form['time']
-        location = request.form['location']
+        home_team_id = request.form['HomeTeamID']
+        away_team_id = request.form['AwayTeamID']
+        datetime_str = request.form['DateTime']
+        location = request.form['Location']
 
-        # Combine date and time into a single datetime string
-        datetime_str = f"{date} {time}:00"
-
-        # Create a new fixture
         new_fixture = Fixture(
             Date=datetime_str,
             Location=location,
@@ -136,22 +134,21 @@ def new_fixture():
 @admin_required
 def edit_fixture(fixture_id):
     fixture = Fixture.query.get_or_404(fixture_id)
-    form = FixtureForm(obj=fixture)
-    form.HomeTeamID.choices = [(team.TeamID, team.TeamName) for team in Team.query.order_by('TeamName')]
-    form.AwayTeamID.choices = [(team.TeamID, team.TeamName) for team in Team.query.order_by('TeamName')]
 
-    if form.validate_on_submit():
-        fixture.Date = form.DateTime.data.strftime('%Y-%m-%d %H:%M:%S')
-        fixture.Location = form.Location.data
-        fixture.HomeTeamID = form.HomeTeamID.data
-        fixture.AwayTeamID = form.AwayTeamID.data
-        fixture_end_time = form.DateTime.data + timedelta(hours=3)
-        fixture.EndTime = fixture_end_time.strftime('%Y-%m-%d %H:%M:%S')
+    if request.method == 'POST':
+        fixture.Date = request.form['DateTime']
+        fixture.Location = request.form['Location']
+        fixture.HomeTeamID = request.form['HomeTeamID']
+        fixture.AwayTeamID = request.form['AwayTeamID']
+        fixture.EndTime = (datetime.strptime(fixture.Date, '%Y-%m-%d %H:%M:%S') +
+                           timedelta(hours=3)).strftime('%Y-%m-%d %H:%M:%S')
+
         db.session.commit()
         flash('Fixture has been updated!', 'success')
         return redirect(url_for('fixtures'))
 
-    return render_template('admin/edit_fixture.html', form=form)
+    teams = Team.query.order_by('TeamName').all()
+    return render_template('admin/edit_fixture.html', fixture=fixture, teams=teams)
 
 
 @app.route('/admin/fixtures/<int:fixture_id>/delete', methods=['POST'])
@@ -174,15 +171,27 @@ def teams():
 @app.route('/admin/teams/new', methods=['GET', 'POST'])
 @admin_required
 def new_team():
-    form = TeamForm()
-    if form.validate_on_submit():
-        team = Team(TeamName=form.TeamName.data, Abbreviation=form.Abbreviation.data,
-                    City=form.City.data, CoachName=form.CoachName.data, AssistantCoachName=form.AssistantCoachName.data)
+    if request.method == 'POST':
+        team_name = request.form['TeamName']
+        abbreviation = request.form['Abbreviation']
+        city = request.form['City']
+        coach_name = request.form['CoachName']
+        assistant_coach_name = request.form['AssistantCoachName']
+
+        team = Team(
+            TeamName=team_name,
+            Abbreviation=abbreviation,
+            City=city,
+            CoachName=coach_name,
+            AssistantCoachName=assistant_coach_name
+        )
         db.session.add(team)
         db.session.commit()
         flash('Team has been created!', 'success')
         return redirect(url_for('teams'))
-    return render_template('admin/new_team.html', form=form)
+
+    return render_template('admin/new_team.html')
+
 
 
 @app.route('/admin/teams/<int:team_id>')
@@ -195,47 +204,59 @@ def team_detail(team_id):
 @app.route('/admin/players/new', methods=['GET', 'POST'])
 @admin_required
 def new_player():
-    form = PlayerForm()
-    form.TeamID.choices = [(team.TeamID, team.TeamName) for team in Team.query.order_by('TeamName')]
-    if form.validate_on_submit():
+    if request.method == 'POST':
+        first_name = request.form['FirstName']
+        last_name = request.form['LastName']
+        team_id = request.form['TeamID']
+        position = request.form['Position']
+        shoots = request.form['Shoots']
+        height = request.form['Height']
+        weight = request.form['Weight']
+        birth_date = request.form['BirthDate']
+        birth_country = request.form['BirthCountry']
+
         player = Player(
-            FirstName=form.FirstName.data,
-            LastName=form.LastName.data,
-            TeamID=form.TeamID.data,
-            Position=form.Position.data,
-            Shoots=form.Shoots.data,
-            Height=form.Height.data,
-            Weight=form.Weight.data,
-            BirthDate=form.BirthDate.data,
-            BirthCountry=form.BirthCountry.data
+            FirstName=first_name,
+            LastName=last_name,
+            TeamID=team_id,
+            Position=position,
+            Shoots=shoots,
+            Height=height,
+            Weight=weight,
+            BirthDate=birth_date,
+            BirthCountry=birth_country
         )
         db.session.add(player)
         db.session.commit()
         flash('Player has been created!', 'success')
         return redirect(url_for('teams'))
-    return render_template('admin/new_player.html', form=form)
+
+    teams = Team.query.order_by('TeamName').all()
+    return render_template('admin/new_player.html', teams=teams)
+
 
 
 @app.route('/admin/players/<int:player_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def edit_player(player_id):
     player = Player.query.get_or_404(player_id)
-    form = PlayerForm(obj=player)
-    form.TeamID.choices = [(team.TeamID, team.TeamName) for team in Team.query.order_by('TeamName')]
-    if form.validate_on_submit():
-        player.FirstName = form.FirstName.data
-        player.LastName = form.LastName.data
-        player.TeamID = form.TeamID.data
-        player.Position = form.Position.data
-        player.Shoots = form.Shoots.data
-        player.Height = form.Height.data
-        player.Weight = form.Weight.data
-        player.BirthDate = form.BirthDate.data
-        player.BirthCountry = form.BirthCountry.data
+    if request.method == 'POST':
+        player.FirstName = request.form['FirstName']
+        player.LastName = request.form['LastName']
+        player.TeamID = request.form['TeamID']
+        player.Position = request.form['Position']
+        player.Shoots = request.form['Shoots']
+        player.Height = request.form['Height']
+        player.Weight = request.form['Weight']
+        player.BirthDate = request.form['BirthDate']
+        player.BirthCountry = request.form['BirthCountry']
         db.session.commit()
         flash('Player has been updated!', 'success')
         return redirect(url_for('team_detail', team_id=player.TeamID))
-    return render_template('admin/edit_player.html', form=form, player=player)
+
+    teams = Team.query.order_by('TeamName').all()
+    return render_template('admin/edit_player.html', player=player, teams=teams)
+
 
 
 @app.route('/admin/staff_positions', methods=['GET', 'POST'])
@@ -255,44 +276,70 @@ def staff_positions():
 @app.route('/admin/allocate_staff', methods=['GET', 'POST'])
 @admin_required
 def allocate_staff():
-    form = FixtureStaffForm()
-    form.fixture_id.choices = [(fixture.GameID, f"{fixture.home_team.TeamName} vs {fixture.away_team.TeamName} on {fixture.Date}") for fixture in Fixture.query.all()]
-    form.user_id.choices = [(user.id, user.username) for user in User.query.all()]
-    form.position_id.choices = [(position.id, position.name) for position in StaffPosition.query.all()]
+    if request.method == 'POST':
+        fixture_id = request.form['fixture_id']
+        user_id = request.form['user_id']
+        position_id = request.form['position_id']
 
-    if form.validate_on_submit():
-        fixture = Fixture.query.get(form.fixture_id.data)
-        if fixture is None:
-            flash('Selected fixture does not exist!', 'danger')
-            return redirect(url_for('allocate_staff'))
-
-        allocation = FixtureStaff(
-            fixture_id=form.fixture_id.data,
-            user_id=form.user_id.data,
-            position_id=form.position_id.data
+        draft = FixtureStaffDraft(
+            fixture_id=fixture_id,
+            user_id=user_id,
+            position_id=position_id
         )
-        db.session.add(allocation)
+        db.session.add(draft)
         db.session.commit()
-        flash('Staff has been allocated!', 'success')
+        flash('Staff has been allocated in draft!', 'success')
         return redirect(url_for('allocate_staff'))
 
-    # Fetch allocations and organize data
-    allocations = FixtureStaff.query.all()
     fixtures = Fixture.query.all()
     positions = StaffPosition.query.all()
+    users = User.query.all()
 
+    draft_allocations = FixtureStaffDraft.query.all()
     allocation_table = {}
-    user_dict = {user.id: {'username': user.username, 'user_id': user.id} for user in User.query.all()}
     for fixture in fixtures:
         allocation_table[fixture.GameID] = {position.id: None for position in positions}
 
-    for allocation in allocations:
-        allocation_table[allocation.fixture_id][allocation.position_id] = user_dict[allocation.user_id]
+    for allocation in draft_allocations:
+        allocation_table[allocation.fixture_id][allocation.position_id] = allocation
 
-    return render_template('admin/allocate_staff.html', form=form, allocations=allocations, allocation_table=allocation_table, fixtures=fixtures, positions=positions)
+    return render_template(
+        'admin/allocate_staff.html',
+        allocation_table=allocation_table,
+        fixtures=fixtures,
+        positions=positions,
+        users=users
+    )
 
 
 
+@app.route('/admin/fixtures/publish_allocation/<int:fixture_id>', methods=['POST'])
+@admin_required
+def publish_allocation(fixture_id):
+    # Get all draft records for this fixture
+    draft_allocations = FixtureStaffDraft.query.filter_by(fixture_id=fixture_id).all()
+
+    if not draft_allocations:
+        flash('No draft allocations found for this fixture!', 'warning')
+        return redirect(url_for('allocate_staff'))
+
+    # Delete existing published allocations for this fixture
+    FixtureStaff.query.filter_by(fixture_id=fixture_id).delete()
+
+    # Copy draft allocations to published allocations
+    for draft in draft_allocations:
+        published = FixtureStaff(
+            fixture_id=draft.fixture_id,
+            user_id=draft.user_id,
+            position_id=draft.position_id,
+            published=True  # Mark as published
+        )
+        db.session.add(published)
+
+    # Commit changes to the database
+    db.session.commit()
+    flash('All draft allocations for this fixture have been published successfully!', 'success')
+    return redirect(url_for('allocate_staff'))
 
 
 @app.route('/admin/move_allocation', methods=['POST'])
@@ -307,13 +354,15 @@ def move_allocation():
         flash('Invalid data received!', 'danger')
         return redirect(url_for('allocate_staff'))
 
-    print(f"Moving allocation for fixture_id: {fixture_id}, user_id: {user_id}, from position_id: {position_id} to new_position_id: {new_position_id}")
+    print(f"Moving allocation for fixture_id: {fixture_id}, user_id: {user_id}, from position_id: {position_id}"
+          f" to new_position_id: {new_position_id}")
 
-    allocation = db.session.query(FixtureStaff).filter_by(fixture_id=fixture_id, user_id=user_id, position_id=position_id).first()
+    allocation = db.session.query(FixtureStaffDraft).filter_by(fixture_id=fixture_id, user_id=user_id,
+                                                          position_id=position_id).first()
     if allocation:
         allocation.position_id = new_position_id
         db.session.commit()
-        flash('Staff allocation has been moved!', 'success')
+        flash('Draft allocation has been moved!', 'success')
     else:
         flash('Allocation not found!', 'danger')
 
@@ -333,11 +382,11 @@ def remove_allocation():
 
     print(f"Removing allocation for fixture_id: {fixture_id}, user_id: {user_id}, position_id: {position_id}")
 
-    allocation = FixtureStaff.query.filter_by(fixture_id=fixture_id, user_id=user_id, position_id=position_id).first()
+    allocation = FixtureStaffDraft.query.filter_by(fixture_id=fixture_id, user_id=user_id, position_id=position_id).first()
     if allocation:
         db.session.delete(allocation)
         db.session.commit()
-        flash('Staff allocation has been removed!', 'success')
+        flash('Draft allocation has been removed!', 'success')
     else:
         flash('Allocation not found!', 'danger')
 
@@ -345,20 +394,21 @@ def remove_allocation():
 
 
 @app.route('/')
-def home():  # put application's code here
+def home():
     if 'user_id' in session:
         user = User.query.filter_by(id=session['user_id']).first()
-        if user.role == 'admin':
-            return redirect(url_for('admin'))
-        else:
-            return redirect(url_for('availability'))
+        if not user:
+            session.pop('user_id', None)
+            return redirect(url_for('login'))
+        is_admin = user.role == 'admin'
+        return render_template('user_homepage.html', is_admin=is_admin)
     return redirect(url_for('login'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['username'].upper()
         password = request.form['password']
 
         user = User.query.filter_by(username=username).first()
@@ -366,8 +416,7 @@ def login():
             session['user_id'] = user.id
             return redirect(url_for('admin' if user.role == 'admin' else 'home'))
         else:
-            flash('Wrong username or password')
-            return render_template('registration/login.html')
+            flash('Wrong username or password', 'danger')
 
     if 'user_id' in session:
         user = User.query.filter_by(id=session['user_id']).first()
@@ -377,10 +426,10 @@ def login():
         if user.role == 'admin':
             return redirect(url_for('admin'))
         else:
-            # The user is logged in but not an admin
             return render_template('some_user_homepage.html')
 
     return render_template('registration/login.html')
+
 
 
 @app.route('/logout')
@@ -394,6 +443,7 @@ def logout():
 def availability():
     user_id = session['user_id']
     fixtures = db.session.query(Fixture).all()
+
     if request.method == 'POST':
         for fixture in fixtures:
             available = request.form.get(f'fixture_{fixture.GameID}', 'off') == 'on'
@@ -407,8 +457,7 @@ def availability():
         flash('Availability updated!', 'success')
         return redirect(url_for('availability'))
 
-    user_availabilities = {ua.fixture_id: ua.available for ua in
-                           UserAvailability.query.filter_by(user_id=user_id).all()}
+    user_availabilities = {ua.fixture_id: ua.available for ua in UserAvailability.query.filter_by(user_id=user_id).all()}
 
     # Group fixtures by month
     fixtures_by_month = defaultdict(list)
@@ -418,6 +467,10 @@ def availability():
 
     return render_template('availability.html', fixtures_by_month=fixtures_by_month,
                            user_availabilities=user_availabilities)
+
+
+
+
 
 
 @app.route('/get_available_users', methods=['GET'])
@@ -440,7 +493,7 @@ def get_available_users():
 @user_required
 def my_allocations():
     user_id = session['user_id']
-    allocations = db.session.query(FixtureStaff).filter_by(user_id=user_id).all()
+    allocations = db.session.query(FixtureStaff).filter_by(user_id=user_id, published=True).all()
     fixtures = {allocation.fixture_id: allocation.fixture for allocation in allocations}
     positions = {allocation.position_id: allocation.position for allocation in allocations}
 
@@ -448,4 +501,6 @@ def my_allocations():
 
 
 if __name__ == '__main__':
+
     app.run(debug=True, host='192.168.2.205', port=5000, use_reloader=True)
+

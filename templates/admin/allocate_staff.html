@@ -3,22 +3,25 @@
 {% block content %}
 <h1>Allocate Staff to Fixture</h1>
 <div class="form-container">
-    <form method="POST" class="form" id="allocation-form">
-        {{ form.hidden_tag() }}
-        <label for="fixture_id">Fixture:</label>
-        <select name="fixture_id" id="fixture_id" class="form-input" onchange="updateUsers()">
-            {% for fixture in form.fixture_id.choices %}
-            <option value="{{ fixture[0] }}">{{ fixture[1] }}</option>
-            {% endfor %}
-        </select>
-        <label for="user_id">User:</label>
-        <select name="user_id" id="user_id" class="form-input">
-            <option value="0">Select Fixture First</option>
-        </select>
-        <label for="position_id">Position:</label>
-        {{ form.position_id(class="form-input") }}
-        <button type="submit" class="form-button">Assign Staff</button>
-    </form>
+    <form action="{{ url_for('allocate_staff') }}" method="POST">
+    <select name="fixture_id" required>
+        {% for fixture in fixtures %}
+        <option value="{{ fixture.GameID }}">{{ fixture.home_team.TeamName }} vs {{ fixture.away_team.TeamName }} on {{ fixture.Date }}</option>
+        {% endfor %}
+    </select>
+    <select name="user_id" required>
+        {% for user in users %}
+        <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+    </select>
+    <select name="position_id" required>
+        {% for position in positions %}
+        <option value="{{ position.id }}">{{ position.name }}</option>
+        {% endfor %}
+    </select>
+    <input type="submit" value="Assign Staff">
+</form>
+
 </div>
 
 <h2>Existing Allocations</h2>
@@ -34,11 +37,14 @@
                     {% for position in positions %}
                         <th>{{ position.name }}</th>
                     {% endfor %}
+                    <th>Status</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for fixture in fixtures %}
-                <tr>
+                {% set published = published_allocations | selectattr("fixture_id", "equalto", fixture.GameID) | list %}
+                <tr class="{% if published %}published-row{% endif %}">
                     <td>{{ fixture.home_team.TeamName }}</td>
                     <td>{{ fixture.away_team.TeamName }}</td>
                     <td>{{ fixture.Date.split(' ')[0] }}</td>
@@ -46,12 +52,28 @@
                     {% for position in positions %}
                         <td>
                             {% if allocation_table[fixture.GameID][position.id] %}
-                                <a href="#" class="allocation-link" data-fixture-id="{{ fixture.GameID }}" data-user-id="{{ allocation_table[fixture.GameID][position.id]['user_id'] }}" data-position-id="{{ position.id }}">{{ allocation_table[fixture.GameID][position.id]['username'] }}</a>
+                                <a href="#" class="allocation-link" data-fixture-id="{{ fixture.GameID }}" data-user-id="{{ allocation_table[fixture.GameID][position.id].user_id }}" data-position-id="{{ position.id }}">
+                                    {{ allocation_table[fixture.GameID][position.id].user.username }}
+                                </a>
                             {% else %}
                                 ---
                             {% endif %}
                         </td>
                     {% endfor %}
+                    <td>
+                        {% if published %}
+                            Published
+                        {% else %}
+                            Draft
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not published %}
+                            <form method="POST" action="{{ url_for('publish_allocation', fixture_id=fixture.GameID) }}">
+                                <button type="submit" class="form-button">Publish</button>
+                            </form>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -59,7 +81,7 @@
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal for Managing Allocations -->
 <div id="allocationModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
