@@ -3,30 +3,60 @@
 {% block content %}
 <h1>Edit Player</h1>
 <div class="form-container">
-    <form method="POST" class="form">
-        {{ form.hidden_tag() }}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div>
         <label for="FirstName">First Name:</label>
-        {{ form.FirstName(class_="form-input") }}
+        <input type="text" id="FirstName" name="FirstName" class="form-control" value="{{ player.FirstName }}" required>
+    </div>
+
+    <div>
         <label for="LastName">Last Name:</label>
-        {{ form.LastName(class_="form-input") }}
+        <input type="text" id="LastName" name="LastName" class="form-control" value="{{ player.LastName }}" required>
+    </div>
+
+    <div>
         <label for="TeamID">Team:</label>
-        {{ form.TeamID(class_="form-input") }}
+        <select id="TeamID" name="TeamID" class="form-control">
+            {% for team in teams %}
+            <option value="{{ team.TeamID }}" {% if team.TeamID == player.TeamID %}selected{% endif %}>{{ team.TeamName }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
         <label for="Position">Position:</label>
-        {{ form.Position(class_="form-input") }}
+        <input type="text" id="Position" name="Position" class="form-control" value="{{ player.Position }}" required>
+    </div>
+
+    <div>
         <label for="Shoots">Shoots:</label>
-        {{ form.Shoots(class_="form-input") }}
+        <input type="text" id="Shoots" name="Shoots" class="form-control" value="{{ player.Shoots }}">
+    </div>
+
+    <div>
         <label for="Height">Height:</label>
-        {{ form.Height(class_="form-input") }}
+        <input type="text" id="Height" name="Height" class="form-control" value="{{ player.Height }}">
+    </div>
+
+    <div>
         <label for="Weight">Weight:</label>
-        {{ form.Weight(class_="form-input") }}
+        <input type="number" id="Weight" name="Weight" class="form-control" value="{{ player.Weight }}">
+    </div>
+
+    <div>
         <label for="BirthDate">Birth Date:</label>
-        {{ form.BirthDate(class_="form-input") }}
-        <label for="BirthCity">Birth City:</label>
-        {{ form.BirthCity(class_="form-input") }}
+        <input type="date" id="BirthDate" name="BirthDate" class="form-control" value="{{ player.BirthDate }}">
+    </div>
+
+    <div>
         <label for="BirthCountry">Birth Country:</label>
-        {{ form.BirthCountry(class_="form-input") }}
-        <button type="submit" class="form-button">Save Changes</button>
-    </form>
+        <input type="text" id="BirthCountry" name="BirthCountry" class="form-control" value="{{ player.BirthCountry }}">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
+
     <a href="{{ url_for('team_detail', team_id=player.TeamID) }}" class="teams-button">Back to Team</a>
 </div>
 {% endblock %}

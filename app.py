@@ -7,7 +7,6 @@ from decorators import admin_required, user_required
 from models import User, Team, Player, Fixture, FixtureStaff, StaffPosition, UserAvailability
 from config import bcrypt, login_manager, app
 from models import db
-from forms import TeamForm, PlayerForm, FixtureForm, FixtureStaffForm, StaffPositionForm
 from datetime import timedelta, datetime
 
 
@@ -238,41 +237,60 @@ def new_player():
     return render_template('admin/new_player.html', teams=teams)
 
 
-
 @app.route('/admin/players/<int:player_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def edit_player(player_id):
     player = Player.query.get_or_404(player_id)
-    form = PlayerForm(obj=player)
-    form.TeamID.choices = [(team.TeamID, team.TeamName) for team in Team.query.order_by('TeamName')]
-    if form.validate_on_submit():
-        player.FirstName = form.FirstName.data
-        player.LastName = form.LastName.data
-        player.TeamID = form.TeamID.data
-        player.Position = form.Position.data
-        player.Shoots = form.Shoots.data
-        player.Height = form.Height.data
-        player.Weight = form.Weight.data
-        player.BirthDate = form.BirthDate.data
-        player.BirthCountry = form.BirthCountry.data
+
+    if request.method == 'POST':
+        # Retrieve form data from the request
+        first_name = request.form['FirstName']
+        last_name = request.form['LastName']
+        team_id = request.form['TeamID']
+        position = request.form['Position']
+        shoots = request.form['Shoots']
+        height = request.form['Height']
+        weight = request.form['Weight']
+        birth_date = request.form['BirthDate']
+        birth_country = request.form['BirthCountry']
+
+        # Update the player's details
+        player.FirstName = first_name
+        player.LastName = last_name
+        player.TeamID = team_id
+        player.Position = position
+        player.Shoots = shoots
+        player.Height = height
+        player.Weight = weight
+        player.BirthDate = birth_date
+        player.BirthCountry = birth_country
+
         db.session.commit()
         flash('Player has been updated!', 'success')
         return redirect(url_for('team_detail', team_id=player.TeamID))
-    return render_template('admin/edit_player.html', form=form, player=player)
+
+    # Get list of teams for the dropdown
+    teams = Team.query.order_by('TeamName').all()
+    return render_template('admin/edit_player.html', player=player, teams=teams)
 
 
 @app.route('/admin/staff_positions', methods=['GET', 'POST'])
 @admin_required
 def staff_positions():
-    form = StaffPositionForm()
-    if form.validate_on_submit():
-        position = StaffPosition(name=form.name.data)
+    if request.method == 'POST':
+        position_name = request.form['name']
+
+        # Create a new staff position
+        position = StaffPosition(name=position_name)
         db.session.add(position)
         db.session.commit()
         flash('Staff position has been created!', 'success')
         return redirect(url_for('staff_positions'))
+
+    # Fetch all staff positions to display
     positions = StaffPosition.query.all()
-    return render_template('admin/staff_positions.html', form=form, positions=positions)
+    return render_template('admin/staff_positions.html', positions=positions)
+
 
 
 @app.route('/admin/allocate_staff', methods=['GET', 'POST'])

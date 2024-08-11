@@ -4,11 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="82ad31be-d8ee-40cb-97a7-0b5b321576d5" name="Changes" comment="removed forms (Mostly)">
+    <list default="true" id="82ad31be-d8ee-40cb-97a7-0b5b321576d5" name="Changes" comment="removed forms (Almost all)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin/new_fixture.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/new_fixture.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin/new_player.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/new_player.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin/new_team.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/new_team.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/forms.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin/edit_player.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/edit_player.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin/staff_positions.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/staff_positions.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -195,7 +196,15 @@
       <option name="project" value="LOCAL" />
       <updated>1723391371690</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="removed forms (Almost all)">
+      <option name="closed" value="true" />
+      <created>1723391434960</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1723391434960</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -205,7 +214,8 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="Going to Docker" />
     <MESSAGE value="removed forms (Mostly)" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed forms (Mostly)" />
+    <MESSAGE value="removed forms (Almost all)" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed forms (Almost all)" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MKL_FLASK$MKL_FLASK.coverage" NAME="MKL FLASK Coverage Results" MODIFIED="1720621349308" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
