@@ -14,7 +14,7 @@ def admin_required(f):
         user = User.query.filter_by(id=user_id).first()
         if not user or user.role != 'admin':
             flash('You do not have permission to access this page.')
-            return redirect(url_for('index'))
+            return redirect(url_for('home'))
 
         return f(*args, **kwargs)
 

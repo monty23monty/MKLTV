@@ -1,11 +1,8 @@
 from collections import defaultdict
-from hashlib import sha256
-
 from flask import request, render_template, flash, redirect, url_for, session, jsonify
-
 from decorators import admin_required, user_required
-from models import User, Team, Player, Fixture, FixtureStaff, StaffPosition, UserAvailability
-from config import bcrypt, login_manager, app
+from models import User, Team, Player, Fixture, FixtureStaff, StaffPosition, UserAvailability, FixtureStaffDraft
+from config import bcrypt, login_manager, app, send_allocation_email, generate_token, confirm_token
 from models import db
 from datetime import timedelta, datetime
 
@@ -27,17 +24,99 @@ def admin():
 @admin_required
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form['username'].upper()
         email = request.form['email']
         role = request.form['role']
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        user = User(username=username, password=hashed_password, email=email, role=role)
+
+        # Create a new user without a password initially
+        user = User(username=username, email=email, role=role, password='')
         db.session.add(user)
         db.session.commit()
-        flash('Your account has been created! You are now able to log in', 'success')
-        return redirect(url_for('login'))
+
+        # Generate a token
+        token = generate_token(user.email)
+
+        # Construct the URL for setting the password
+        set_password_url = url_for('set_password', token=token, _external=True)
+
+        # Send the email via AWS SES
+        subject = "Complete Your Registration"
+        body_text = f"Dear {username},\n\nPlease click the link below to set your password and complete your registration:\n\n{set_password_url}\n\nThank you."
+
+        send_allocation_email(user.email, subject, body_text)
+
+        flash('A registration email has been sent to the user.', 'success')
+        return redirect(url_for('admin'))
     return render_template('admin/register.html')
+
+
+@app.route('/set_password/<token>', methods=['GET', 'POST'])
+def set_password(token):
+    email = confirm_token(token)
+    if not email:
+        flash('The confirmation link is invalid or has expired.', 'danger')
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(email=email).first_or_404()
+
+    if request.method == 'POST':
+        password = request.form['password']
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        user.password = hashed_password
+        db.session.commit()
+
+        flash('Your password has been set. You can now log in.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('registration/set_password.html')
+
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        username = request.form['username'].upper()
+        user = User.query.filter_by(username=username).first()
+
+        if user:
+            # Generate a token
+            token = generate_token(user.email)
+
+            # Construct the URL for resetting the password
+            reset_password_url = url_for('reset_password', token=token, _external=True)
+
+            # Send the email via AWS SES
+            subject = "Password Reset Request"
+            body_text = f"Dear {user.username},\n\nPlease click the link below to reset your password:\n\n{reset_password_url}\n\nIf you did not request this password reset, please ignore this email.\n\nThank you."
+
+            send_allocation_email(user.email, subject, body_text)
+
+            flash('An email has been sent with instructions to reset your password.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('Username not found.', 'danger')
+
+    return render_template('registration/forgot_password.html')
+
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    email = confirm_token(token)
+    if not email:
+        flash('The reset link is invalid or has expired.', 'danger')
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(email=email).first_or_404()
+
+    if request.method == 'POST':
+        password = request.form['password']
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        user.password = hashed_password
+        db.session.commit()
+
+        flash('Your password has been reset. You can now log in.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('registration/reset_password.html')
 
 
 @app.route('/admin/users')
@@ -292,7 +371,6 @@ def staff_positions():
     return render_template('admin/staff_positions.html', positions=positions)
 
 
-
 @app.route('/admin/allocate_staff', methods=['GET', 'POST'])
 @admin_required
 def allocate_staff():
@@ -307,14 +385,20 @@ def allocate_staff():
             flash('Selected fixture does not exist!', 'danger')
             return redirect(url_for('allocate_staff'))
 
-        allocation = FixtureStaff(
-            fixture_id=fixture_id,
-            user_id=user_id,
-            position_id=position_id
-        )
-        db.session.add(allocation)
+        # Save the allocation to the draft table
+        draft_allocation = FixtureStaffDraft.query.filter_by(fixture_id=fixture_id, user_id=user_id).first()
+        if draft_allocation:
+            draft_allocation.position_id = position_id
+        else:
+            draft_allocation = FixtureStaffDraft(
+                fixture_id=fixture_id,
+                user_id=user_id,
+                position_id=position_id
+            )
+            db.session.add(draft_allocation)
+
         db.session.commit()
-        flash('Staff has been allocated!', 'success')
+        flash('Staff allocation draft saved!', 'success')
         return redirect(url_for('allocate_staff'))
 
     fixtures = Fixture.query.all()
@@ -322,32 +406,69 @@ def allocate_staff():
     positions = StaffPosition.query.all()
 
     # Prepare choices for the select fields
-    fixture_choices = [(fixture.GameID, f"{fixture.home_team.TeamName} vs {fixture.away_team.TeamName} on {fixture.Date}") for fixture in fixtures]
+    fixture_choices = [
+        (fixture.GameID, f"{fixture.home_team.TeamName} vs {fixture.away_team.TeamName} on {fixture.Date}") for fixture
+        in fixtures]
     user_choices = [(user.id, user.username) for user in users]
     position_choices = [(position.id, position.name) for position in positions]
 
-    # Fetch allocations and organize data
-    allocations = FixtureStaff.query.all()
+    # Fetch only draft allocations and organize data
+    draft_allocations = FixtureStaffDraft.query.all()
 
     allocation_table = {}
     user_dict = {user.id: {'username': user.username, 'user_id': user.id} for user in users}
+    unpublished_fixtures = set()
+
     for fixture in fixtures:
         allocation_table[fixture.GameID] = {position.id: None for position in positions}
 
-    for allocation in allocations:
-        allocation_table[allocation.fixture_id][allocation.position_id] = user_dict[allocation.user_id]
+    for draft_allocation in draft_allocations:
+        allocation_table[draft_allocation.fixture_id][draft_allocation.position_id] = user_dict[draft_allocation.user_id]
+        unpublished_fixtures.add(draft_allocation.fixture_id)
 
     return render_template(
         'admin/allocate_staff.html',
         fixture_choices=fixture_choices,
         user_choices=user_choices,
         position_choices=position_choices,
-        allocations=allocations,
         allocation_table=allocation_table,
         fixtures=fixtures,
-        positions=positions
+        positions=positions,
+        unpublished_fixtures=unpublished_fixtures
     )
 
+
+@app.route('/admin/publish_allocations/<int:fixture_id>', methods=['POST'])
+@admin_required
+def publish_allocations(fixture_id):
+    # Remove existing allocations for this fixture in the published table
+    FixtureStaff.query.filter_by(fixture_id=fixture_id).delete()
+
+    # Copy draft allocations to the published table without clearing the draft table
+    draft_allocations = FixtureStaffDraft.query.filter_by(fixture_id=fixture_id).all()
+
+    for draft in draft_allocations:
+        published_allocation = FixtureStaff(
+            fixture_id=draft.fixture_id,
+            user_id=draft.user_id,
+            position_id=draft.position_id
+        )
+        db.session.add(published_allocation)
+
+        # Fetch the position name
+        position = StaffPosition.query.get(draft.position_id)
+        position_name = position.name if position else "Unknown Position"
+
+        # Send email notification to the affected user
+        user = User.query.get(draft.user_id)
+        fixture = Fixture.query.get(fixture_id)
+        subject = "Allocation Change Notification"
+        body_text = f"Dear {user.username},\n\nYour allocation for the fixture between {fixture.home_team.TeamName} and {fixture.away_team.TeamName} on {fixture.Date} has been updated. Your new position is {position_name}.\n\nThank you."
+        send_allocation_email(user.email, subject, body_text)
+
+    db.session.commit()
+    flash('Allocations have been published and notifications sent!', 'success')
+    return redirect(url_for('allocate_staff'))
 
 
 @app.route('/admin/move_allocation', methods=['POST'])
@@ -358,22 +479,19 @@ def move_allocation():
         user_id = int(request.form.get('user_id'))
         position_id = int(request.form.get('position_id'))
         new_position_id = int(request.form.get('new_position_id'))
-    except ValueError as e:
+    except ValueError:
         flash('Invalid data received!', 'danger')
         return redirect(url_for('allocate_staff'))
 
-    print(f"Moving allocation for fixture_id: {fixture_id}, user_id: {user_id}, from position_id: {position_id} to new_position_id: {new_position_id}")
-
-    allocation = db.session.query(FixtureStaff).filter_by(fixture_id=fixture_id, user_id=user_id, position_id=position_id).first()
+    allocation = db.session.query(FixtureStaffDraft).filter_by(fixture_id=fixture_id, user_id=user_id, position_id=position_id).first()
     if allocation:
         allocation.position_id = new_position_id
         db.session.commit()
-        flash('Staff allocation has been moved!', 'success')
+        flash('Draft allocation has been moved!', 'success')
     else:
-        flash('Allocation not found!', 'danger')
+        flash('Draft allocation not found!', 'danger')
 
     return redirect(url_for('allocate_staff'))
-
 
 @app.route('/admin/remove_allocation', methods=['POST'])
 @admin_required
@@ -382,19 +500,17 @@ def remove_allocation():
         fixture_id = int(request.form.get('fixture_id'))
         user_id = int(request.form.get('user_id'))
         position_id = int(request.form.get('position_id'))
-    except ValueError as e:
+    except ValueError:
         flash('Invalid data received!', 'danger')
         return redirect(url_for('allocate_staff'))
 
-    print(f"Removing allocation for fixture_id: {fixture_id}, user_id: {user_id}, position_id: {position_id}")
-
-    allocation = FixtureStaff.query.filter_by(fixture_id=fixture_id, user_id=user_id, position_id=position_id).first()
+    allocation = FixtureStaffDraft.query.filter_by(fixture_id=fixture_id, user_id=user_id, position_id=position_id).first()
     if allocation:
         db.session.delete(allocation)
         db.session.commit()
-        flash('Staff allocation has been removed!', 'success')
+        flash('Draft allocation has been removed!', 'success')
     else:
-        flash('Allocation not found!', 'danger')
+        flash('Draft allocation not found!', 'danger')
 
     return redirect(url_for('allocate_staff'))
 
@@ -494,7 +610,11 @@ def get_available_users():
 @user_required
 def my_allocations():
     user_id = session['user_id']
+
+    # Fetch only the published allocations
     allocations = db.session.query(FixtureStaff).filter_by(user_id=user_id).all()
+
+    # Get the related fixtures and positions
     fixtures = {allocation.fixture_id: allocation.fixture for allocation in allocations}
     positions = {allocation.position_id: allocation.position for allocation in allocations}
 

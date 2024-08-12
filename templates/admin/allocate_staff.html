@@ -3,27 +3,29 @@
 <h1>Allocate Staff to Fixture</h1>
 <div class="form-container">
     <form method="POST" action="{{ url_for('allocate_staff') }}" class="form" id="allocation-form">
+        <!-- Fixture, User, and Position Selectors -->
         <label for="fixture_id">Fixture:</label>
-<select name="fixture_id" id="fixture_id" class="form-input" onchange="updateUsers()">
-    {% for fixture in fixture_choices %}
-    <option value="{{ fixture[0] }}">{{ fixture[1] }}</option>
-    {% endfor %}
-</select>
+        <select name="fixture_id" id="fixture_id" class="form-input" onchange="updateUsers()">
+            {% for fixture in fixture_choices %}
+            <option value="{{ fixture[0] }}">{{ fixture[1] }}</option>
+            {% endfor %}
+        </select>
 
-<label for="user_id">User:</label>
-<select name="user_id" id="user_id" class="form-input">
-    {% for user in user_choices %}
-    <option value="{{ user[0] }}">{{ user[1] }}</option>
-    {% endfor %}
-</select>
+        <label for="user_id">User:</label>
+        <select name="user_id" id="user_id" class="form-input">
+            {% for user in user_choices %}
+            <option value="{{ user[0] }}">{{ user[1] }}</option>
+            {% endfor %}
+        </select>
 
-<label for="position_id">Position:</label>
-<select name="position_id" id="position_id" class="form-input">
-    {% for position in position_choices %}
-    <option value="{{ position[0] }}">{{ position[1] }}</option>
-    {% endfor %}
-</select>
-        <button type="submit" class="form-button">Assign Staff</button>
+        <label for="position_id">Position:</label>
+        <select name="position_id" id="position_id" class="form-input">
+            {% for position in position_choices %}
+            <option value="{{ position[0] }}">{{ position[1] }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="form-button">Save Draft</button>
     </form>
 </div>
 
@@ -40,11 +42,12 @@
                     {% for position in positions %}
                         <th>{{ position.name }}</th>
                     {% endfor %}
+                    <th>Publish</th>
                 </tr>
             </thead>
             <tbody>
                 {% for fixture in fixtures %}
-                <tr>
+                <tr style="background-color: {% if fixture.GameID in unpublished_fixtures %}#555555{% else %}white{% endif %}; color: {% if fixture.GameID in unpublished_fixtures %}#FFFFFF{% else %}#000000{% endif %};">
                     <td>{{ fixture.home_team.TeamName }}</td>
                     <td>{{ fixture.away_team.TeamName }}</td>
                     <td>{{ fixture.Date.split(' ')[0] }}</td>
@@ -58,6 +61,11 @@
                             {% endif %}
                         </td>
                     {% endfor %}
+                    <td>
+                        <form method="POST" action="{{ url_for('publish_allocations', fixture_id=fixture.GameID) }}">
+                            <button type="submit" class="form-button">Publish</button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -65,7 +73,9 @@
     </div>
 </div>
 
-<!-- Modal -->
+
+
+<!-- Modal for editing allocations -->
 <div id="allocationModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
