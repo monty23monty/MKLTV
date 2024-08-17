@@ -218,7 +218,7 @@ def new_fixture():
         db.session.add(new_game)
         db.session.commit()
         flash('New game has been created!', 'success')
-        return redirect(url_for('games'))
+        return redirect(url_for('fixtures'))
 
     teams = Team.query.all()
     return render_template('admin/new_fixture.html', teams=teams)
@@ -695,7 +695,6 @@ def public_live_game(game_id):
                            away_team=away_team_name)
 
 
-
 @app.route('/api/sog', methods=['GET'])
 def sog():
     live_game = Game.query.filter_by(live=True).first()
@@ -754,5 +753,69 @@ def sog_team(team_id):
         return jsonify({'message': 'SOG updated successfully.', 'sog': updated_sog}), 200
 
 
+# POST /goals/<teamid>: Increment the goal count for the given team
+@app.route('/goals/<int:team_id>', methods=['POST'])
+def add_goal(team_id):
+    live_game = Game.query.filter_by(live=True).first()
+
+    if not live_game:
+        return jsonify({'error': 'No live game found'}), 404
+
+    game_stats = GameStats.query.filter_by(game_id=live_game.GameID).first()
+
+    if not game_stats:
+        return jsonify({'error': 'Game stats not found for the live game.'}), 404
+
+    if team_id == live_game.HomeTeamID:
+        game_stats.home_sog += 1
+        db.session.commit()
+        return jsonify({'message': 'Goal added to home team', 'home_goals': game_stats.home_sog}), 200
+    elif team_id == live_game.AwayTeamID:
+        game_stats.away_sog += 1
+        db.session.commit()
+        return jsonify({'message': 'Goal added to away team', 'away_goals': game_stats.away_sog}), 200
+    else:
+        return jsonify({'error': 'Team ID not found in the current live game.'}), 404
+
+# GET /goals/<teamid>: Retrieve the goal count for the given team
+@app.route('/goals/<int:team_id>', methods=['GET'])
+def get_team_goals(team_id):
+    live_game = Game.query.filter_by(live=True).first()
+
+    if not live_game:
+        return jsonify({'error': 'No live game found'}), 404
+
+    game_stats = GameStats.query.filter_by(game_id=live_game.GameID).first()
+
+    if not game_stats:
+        return jsonify({'error': 'Game stats not found for the live game.'}), 404
+
+    if team_id == live_game.HomeTeamID:
+        return jsonify({'home_goals': game_stats.home_sog}), 200
+    elif team_id == live_game.AwayTeamID:
+        return jsonify({'away_goals': game_stats.away_sog}), 200
+    else:
+        return jsonify({'error': 'Team ID not found in the current live game.'}), 404
+
+
+# GET /goals: Retrieve the goal count for both teams
+@app.route('/goals', methods=['GET'])
+def get_all_goals():
+    live_game = Game.query.filter_by(live=True).first()
+
+    if not live_game:
+        return jsonify({'error': 'No live game found'}), 404
+
+    game_stats = GameStats.query.filter_by(game_id=live_game.GameID).first()
+
+    if not game_stats:
+        return jsonify({'error': 'Game stats not found for the live game.'}), 404
+
+    return jsonify({
+        'home_goals': game_stats.home_sog,
+        'away_goals': game_stats.away_sog
+    }), 200
+
+
 if __name__ == '__main__':
-    app.run(debug=True, host='192.168.2.205', port=5000, use_reloader=True)
+    app.run(host='127.0.0.1', port=9999)
