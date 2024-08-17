@@ -1,0 +1,29 @@
+{% extends 'public/base.html' %}
+
+{% block content %}
+<div class="stat-container">
+    <div class="stat-column">
+        <div class="stat-item">
+            <h3>Goals - {{ home_team }}</h3>
+            <p>{{ game_stats.home_goals }}</p>
+        </div>
+        <div class="stat-item">
+            <h3>Shots on Goal (SOG) - {{ home_team }}</h3>
+            <p>{{ game_stats.home_sog }}</p>
+        </div>
+        <!-- Add more stats here for the home team -->
+    </div>
+
+    <div class="stat-column">
+        <div class="stat-item">
+            <h3>Goals - {{ away_team }}</h3>
+            <p>{{ game_stats.away_goals }}</p>
+        </div>
+        <div class="stat-item">
+            <h3>Shots on Goal (SOG) - {{ away_team }}</h3>
+            <p>{{ game_stats.away_sog }}</p>
+        </div>
+        <!-- Add more stats here for the away team -->
+    </div>
+</div>
+{% endblock %}

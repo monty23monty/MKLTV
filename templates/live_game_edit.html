@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Live Game - Edit Mode</h1>
+    <h2>{{ fixture.home_team.TeamName }} vs {{ fixture.away_team.TeamName }}</h2>
+    <p>Date: {{ fixture.Date }}</p>
+    <p>Location: {{ fixture.Location }}</p>
+
+    <form method="POST">
+        <div class="stats-table">
+            <h3>Game Statistics</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Statistic</th>
+                        <th>{{ fixture.home_team.TeamName }}</th>
+                        <th>{{ fixture.away_team.TeamName }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Shots on Goal (SOG)</td>
+                        <td><input type="number" name="home_sog" value="{{ game_stats.home_sog }}"></td>
+                        <td><input type="number" name="away_sog" value="{{ game_stats.away_sog }}"></td>
+                    </tr>
+                    <!-- Add more stats as needed -->
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn">Update Stats</button>
+    </form>
+</div>
+{% endblock %}

@@ -7,7 +7,11 @@ html {
     height: 100%; /* Ensure the full height is used */
     margin: 0; /* Remove the default margin */
 }
-
+@media only screen and (max-width: 768px) {
+    body {
+        overflow: auto; /* Allow scrolling on mobile devices */
+    }
+}
 body {
     height: 100%; /* Ensure the full height is used */
     margin: 0; /* Remove the default margin */

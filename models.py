@@ -33,6 +33,7 @@ class Game(db.Model):
     __tablename__ = 'games'
     GameID = db.Column(db.Integer, primary_key=True)
     Date = db.Column(db.String(50))
+    EndTime = db.Column(db.String(50))
     Location = db.Column(db.String(255))
     HomeTeamID = db.Column(db.Integer, db.ForeignKey('teams.TeamID'))
     AwayTeamID = db.Column(db.Integer, db.ForeignKey('teams.TeamID'))
@@ -42,6 +43,7 @@ class Game(db.Model):
     # Relationships
     home_team = db.relationship('Team', foreign_keys=[HomeTeamID])
     away_team = db.relationship('Team', foreign_keys=[AwayTeamID])
+    game_stats = db.relationship('GameStats', backref='game', cascade='all, delete-orphan')
 
 
 class Player(db.Model):
@@ -59,22 +61,6 @@ class Player(db.Model):
     BirthCountry = db.Column(db.String(100))
 
 
-class Fixture(db.Model):
-    __tablename__ = 'fixtures'
-    GameID = db.Column(db.Integer, primary_key=True)
-    Date = db.Column(db.String(50))
-    EndTime = db.Column(db.String(50))
-    Location = db.Column(db.String(255))
-    HomeTeamID = db.Column(db.Integer, db.ForeignKey('teams.TeamID'))
-    AwayTeamID = db.Column(db.Integer, db.ForeignKey('teams.TeamID'))
-    live = db.Column(db.Boolean)
-    completed = db.Column(db.Boolean)
-
-    # Relationships
-    home_team = db.relationship('Team', foreign_keys=[HomeTeamID])
-    away_team = db.relationship('Team', foreign_keys=[AwayTeamID])
-
-
 class StaffPosition(db.Model):
     __tablename__ = 'staff_positions'
     id = db.Column(db.Integer, primary_key=True)
@@ -84,11 +70,11 @@ class StaffPosition(db.Model):
 class FixtureStaff(db.Model):
     __tablename__ = 'fixture_staff'
     id = db.Column(db.Integer, primary_key=True)
-    fixture_id = db.Column(db.Integer, db.ForeignKey('fixtures.GameID'), nullable=False)
+    game_id = db.Column(db.Integer, db.ForeignKey('games.GameID'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     position_id = db.Column(db.Integer, db.ForeignKey('staff_positions.id'), nullable=False)
 
-    fixture = db.relationship('Fixture', backref=db.backref('fixture_staff', cascade='all, delete-orphan'))
+    game = db.relationship('Game', backref=db.backref('fixture_staff', cascade='all, delete-orphan'))
     user = db.relationship('User', backref=db.backref('fixture_staff', cascade='all, delete-orphan'))
     position = db.relationship('StaffPosition', backref=db.backref('fixture_staff', cascade='all, delete-orphan'))
 
@@ -96,11 +82,11 @@ class FixtureStaff(db.Model):
 class FixtureStaffDraft(db.Model):
     __tablename__ = 'fixture_staff_draft'
     id = db.Column(db.Integer, primary_key=True)
-    fixture_id = db.Column(db.Integer, db.ForeignKey('fixtures.GameID'), nullable=False)
+    game_id = db.Column(db.Integer, db.ForeignKey('games.GameID'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     position_id = db.Column(db.Integer, db.ForeignKey('staff_positions.id'), nullable=False)
 
-    fixture = db.relationship('Fixture', backref=db.backref('fixture_staff_draft', cascade='all, delete-orphan'))
+    game = db.relationship('Game', backref=db.backref('fixture_staff_draft', cascade='all, delete-orphan'))
     user = db.relationship('User', backref=db.backref('fixture_staff_draft', cascade='all, delete-orphan'))
     position = db.relationship('StaffPosition', backref=db.backref('fixture_staff_draft', cascade='all, delete-orphan'))
 
@@ -108,8 +94,16 @@ class FixtureStaffDraft(db.Model):
 class UserAvailability(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    fixture_id = db.Column(db.Integer, db.ForeignKey('fixtures.GameID'), nullable=False)
+    game_id = db.Column(db.Integer, db.ForeignKey('games.GameID'), nullable=False)
     available = db.Column(db.Boolean, default=True)
 
     user = db.relationship('User', backref=db.backref('availabilities', cascade='all, delete-orphan'))
-    fixture = db.relationship('Fixture', backref=db.backref('availabilities', cascade='all, delete-orphan'))
+    game = db.relationship('Game', backref=db.backref('availabilities', cascade='all, delete-orphan'))
+
+
+class GameStats(db.Model):
+    __tablename__ = 'game_stats'
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('games.GameID'), nullable=False)
+    home_sog = db.Column(db.Integer)
+    away_sog = db.Column(db.Integer)
