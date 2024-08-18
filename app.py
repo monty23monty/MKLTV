@@ -37,7 +37,10 @@ def register():
         set_password_url = url_for('set_password', token=token, _external=True)
 
         subject = "Complete Your Registration"
-        body_text = f"Dear {username},\n\nPlease click the link below to set your password and complete your registration:\n\n{set_password_url}\n\nThank you."
+        body_text = (f"Dear {username},\n\n You have been registered for a lightning TV {role} account.\n\n"
+                     f"Your username is: {username}\n\n"
+                     f"Please click the link below to set your password and complete your registration:\n\n"
+                     f"{set_password_url}\n\nIf you have any questions, please contact Leo\n\nThank you.")
 
         send_allocation_email(user.email, subject, body_text)
 
@@ -232,8 +235,13 @@ def edit_fixture(fixture_id):
     if request.method == 'POST':
         fixture.HomeTeamID = request.form['HomeTeamID']
         fixture.AwayTeamID = request.form['AwayTeamID']
-        fixture.Date = f"{request.form['Date']} {request.form['Time']}:00"
+
+        # Here, we capture the combined date and time from the DateTime input
+        fixture.Date = request.form['DateTime'].replace('T', ' ') + ":00"
+
         fixture.Location = request.form['Location']
+
+        # Calculate the fixture end time, assuming it's 3 hours after the start time
         fixture_end_time = datetime.strptime(fixture.Date, '%Y-%m-%d %H:%M:%S') + timedelta(hours=3)
         fixture.EndTime = fixture_end_time.strftime('%Y-%m-%d %H:%M:%S')
 
@@ -243,6 +251,7 @@ def edit_fixture(fixture_id):
 
     teams = Team.query.order_by('TeamName').all()
     return render_template('admin/edit_fixture.html', fixture=fixture, teams=teams)
+
 
 
 @app.route('/admin/fixtures/<int:fixture_id>/delete', methods=['POST'])
@@ -290,8 +299,15 @@ def new_team():
 @app.route('/admin/teams/<int:team_id>')
 @admin_required
 def team_detail(team_id):
+    # Fetch the team by ID, or return a 404 error if not found
     team = Team.query.get_or_404(team_id)
-    return render_template('admin/team_detail.html', team=team)
+
+    # Fetch all players associated with this team
+    players = Player.query.filter_by(TeamID=team.TeamID).all()
+
+    # Render the template and pass the team and players data to it
+    return render_template('admin/team_detail.html', team=team, players=players)
+
 
 
 @app.route('/admin/players/new', methods=['GET', 'POST'])
@@ -382,13 +398,13 @@ def staff_positions():
 @admin_required
 def allocate_staff():
     if request.method == 'POST':
-        game_id = request.form['fixture_id']  # Update to 'game_id' in the form
+        game_id = request.form['game_id']  # Update to 'game_id' in the form
         user_id = request.form['user_id']
         position_id = request.form['position_id']
-
-        fixture = Game.query.get(game_id)
-        if fixture is None:
-            flash('Selected fixture does not exist!', 'danger')
+        app.logger.debug(f"Received game_id: {game_id}, user_id: {user_id}, position_id: {position_id}")
+        game = Game.query.get(game_id)
+        if game is None:
+            flash('Selected game does not exist!', 'danger')
             return redirect(url_for('allocate_staff'))
 
         draft_allocation = FixtureStaffDraft.query.filter_by(game_id=game_id, user_id=user_id).first()
@@ -406,13 +422,13 @@ def allocate_staff():
         flash('Staff allocation draft saved!', 'success')
         return redirect(url_for('allocate_staff'))
 
-    fixtures = Game.query.all()
+    games = Game.query.all()
     users = User.query.all()
     positions = StaffPosition.query.all()
 
-    fixture_choices = [
-        (fixture.GameID, f"{fixture.home_team.TeamName} vs {fixture.away_team.TeamName} on {fixture.Date}") for fixture
-        in fixtures]
+    game_choices = [
+        (game.GameID, f"{game.home_team.TeamName} vs {game.away_team.TeamName} on {game.Date}") for game
+        in games]
     user_choices = [(user.id, user.username) for user in users]
     position_choices = [(position.id, position.name) for position in positions]
 
@@ -420,36 +436,35 @@ def allocate_staff():
 
     allocation_table = {}
     user_dict = {user.id: {'username': user.username, 'user_id': user.id} for user in users}
-    unpublished_fixtures = set()
+    unpublished_games = set()
 
-    for fixture in fixtures:
-        allocation_table[fixture.GameID] = {position.id: None for position in positions}
+    for game in games:
+        allocation_table[game.GameID] = {position.id: None for position in positions}
 
     for draft_allocation in draft_allocations:
         allocation_table[draft_allocation.game_id][draft_allocation.position_id] = user_dict[draft_allocation.user_id]  # Updated to game_id
-        unpublished_fixtures.add(draft_allocation.game_id)  # Updated to game_id
+        unpublished_games.add(draft_allocation.game_id)  # Updated to game_id
 
     return render_template(
         'admin/allocate_staff.html',
-        fixture_choices=fixture_choices,
+        game_choices=game_choices,
         user_choices=user_choices,
         position_choices=position_choices,
         allocation_table=allocation_table,
-        fixtures=fixtures,
+        games=games,
         positions=positions,
-        unpublished_fixtures=unpublished_fixtures
+        unpublished_games=unpublished_games
     )
 
 
-
-@app.route('/admin/publish_allocations/<int:fixture_id>', methods=['POST'])
+@app.route('/admin/publish_allocations/<int:game_id>', methods=['POST'])
 @admin_required
-def publish_allocations(fixture_id):
-    # Remove existing allocations for this fixture in the published table
-    FixtureStaff.query.filter_by(game_id=fixture_id).delete()  # Changed fixture_id to game_id
+def publish_allocations(game_id):
+    # Remove existing allocations for this game in the published table
+    FixtureStaff.query.filter_by(game_id=game_id).delete()  # Changed fixture_id to game_id
 
     # Copy draft allocations to the published table without clearing the draft table
-    draft_allocations = FixtureStaffDraft.query.filter_by(game_id=fixture_id).all()  # Changed fixture_id to game_id
+    draft_allocations = FixtureStaffDraft.query.filter_by(game_id=game_id).all()  # Changed fixture_id to game_id
 
     for draft in draft_allocations:
         published_allocation = FixtureStaff(
@@ -465,9 +480,9 @@ def publish_allocations(fixture_id):
 
         # Send email notification to the affected user
         user = User.query.get(draft.user_id)
-        fixture = Game.query.get(fixture_id)  # Changed Fixture to Game and fixture_id to game_id
+        game = Game.query.get(game_id)  # Changed Fixture to Game and fixture_id to game_id
         subject = "Allocation Change Notification"
-        body_text = f"Dear {user.username},\n\nYour allocation for the fixture between {fixture.home_team.TeamName} and {fixture.away_team.TeamName} on {fixture.Date} has been updated. Your new position is {position_name}.\n\nThank you."
+        body_text = f"Dear {user.username},\n\nYour allocation for the game between {game.home_team.TeamName} and {game.away_team.TeamName} on {game.Date} has been updated. Your new position is {position_name}.\n\nThank you."
         send_allocation_email(user.email, subject, body_text)
 
     db.session.commit()
@@ -475,12 +490,11 @@ def publish_allocations(fixture_id):
     return redirect(url_for('allocate_staff'))
 
 
-
 @app.route('/admin/move_allocation', methods=['POST'])
 @admin_required
 def move_allocation():
     try:
-        fixture_id = int(request.form.get('fixture_id'))
+        game_id = int(request.form.get('game_id'))  # Updated to game_id
         user_id = int(request.form.get('user_id'))
         position_id = int(request.form.get('position_id'))
         new_position_id = int(request.form.get('new_position_id'))
@@ -488,7 +502,7 @@ def move_allocation():
         flash('Invalid data received!', 'danger')
         return redirect(url_for('allocate_staff'))
 
-    allocation = db.session.query(FixtureStaffDraft).filter_by(fixture_id=fixture_id, user_id=user_id, position_id=position_id).first()
+    allocation = db.session.query(FixtureStaffDraft).filter_by(game_id=game_id, user_id=user_id, position_id=position_id).first()  # Updated to game_id
     if allocation:
         allocation.position_id = new_position_id
         db.session.commit()
@@ -503,14 +517,14 @@ def move_allocation():
 @admin_required
 def remove_allocation():
     try:
-        fixture_id = int(request.form.get('fixture_id'))
+        game_id = int(request.form.get('game_id'))  # Updated to game_id
         user_id = int(request.form.get('user_id'))
         position_id = int(request.form.get('position_id'))
     except ValueError:
         flash('Invalid data received!', 'danger')
         return redirect(url_for('allocate_staff'))
 
-    allocation = FixtureStaffDraft.query.filter_by(game_id=fixture_id, user_id=user_id, position_id=position_id).first()  # Changed fixture_id to game_id
+    allocation = FixtureStaffDraft.query.filter_by(game_id=game_id, user_id=user_id, position_id=position_id).first()  # Updated to game_id
     if allocation:
         db.session.delete(allocation)
         db.session.commit()
@@ -519,7 +533,6 @@ def remove_allocation():
         flash('Draft allocation not found!', 'danger')
 
     return redirect(url_for('allocate_staff'))
-
 
 
 @app.route('/')
@@ -570,40 +583,41 @@ def logout():
 @user_required
 def availability():
     user_id = session['user_id']
-    fixtures = db.session.query(Game).all()
+    games = db.session.query(Game).all()
+
     if request.method == 'POST':
-        for fixture in fixtures:
-            available = request.form.get(f'fixture_{fixture.GameID}', 'off') == 'on'
-            user_availability = UserAvailability.query.filter_by(user_id=user_id, fixture_id=fixture.GameID).first()
+        for game in games:
+            available = request.form.get(f'game_{game.GameID}', 'off') == 'on'
+            user_availability = UserAvailability.query.filter_by(user_id=user_id, game_id=game.GameID).first()
+
             if user_availability:
                 user_availability.available = available
             else:
-                new_availability = UserAvailability(user_id=user_id, fixture_id=fixture.GameID, available=available)
+                new_availability = UserAvailability(user_id=user_id, game_id=game.GameID, available=available)
                 db.session.add(new_availability)
+
         db.session.commit()
         flash('Availability updated!', 'success')
         return redirect(url_for('availability'))
 
-    user_availabilities = {ua.fixture_id: ua.available for ua in
-                           UserAvailability.query.filter_by(user_id=user_id).all()}
+    user_availabilities = {ua.game_id: ua.available for ua in UserAvailability.query.filter_by(user_id=user_id).all()}
 
-    fixtures_by_month = defaultdict(list)
-    for fixture in fixtures:
-        month = datetime.strptime(fixture.Date, "%Y-%m-%d %H:%M:%S").strftime("%B %Y")
-        fixtures_by_month[month].append(fixture)
+    games_by_month = defaultdict(list)
+    for game in games:
+        month = datetime.strptime(game.Date, "%Y-%m-%d %H:%M:%S").strftime("%B %Y")
+        games_by_month[month].append(game)
 
-    return render_template('availability.html', fixtures_by_month=fixtures_by_month,
-                           user_availabilities=user_availabilities)
+    return render_template('availability.html', games_by_month=games_by_month, user_availabilities=user_availabilities)
 
 
 @app.route('/get_available_users', methods=['GET'])
 def get_available_users():
-    fixture_id = request.args.get('fixture_id')
-    if not fixture_id:
-        return jsonify({'error': 'No fixture ID provided'}), 400
+    game_id = request.args.get('game_id')
+    if not game_id:
+        return jsonify({'error': 'No game ID provided'}), 400
 
     available_users = db.session.query(User).join(UserAvailability).filter(
-        UserAvailability.fixture_id == fixture_id,
+        UserAvailability.game_id == game_id,
         UserAvailability.available == True
     ).all()
 
@@ -612,16 +626,18 @@ def get_available_users():
     return jsonify(user_list)
 
 
+
 @app.route('/my_allocations')
 @user_required
 def my_allocations():
     user_id = session['user_id']
     allocations = db.session.query(FixtureStaff).filter_by(user_id=user_id).all()
 
-    fixtures = {allocation.fixture_id: allocation.fixture for allocation in allocations}
+    # Build dictionaries for related games and positions
+    games = {allocation.game_id: allocation.game for allocation in allocations}
     positions = {allocation.position_id: allocation.position for allocation in allocations}
 
-    return render_template('my_allocations.html', fixtures=fixtures, positions=positions, allocations=allocations)
+    return render_template('my_allocations.html', games=games, positions=positions, allocations=allocations)
 
 
 @app.route('/admin/fixtures/<int:fixture_id>/live', methods=['POST'])
@@ -671,7 +687,6 @@ def live_game(fixture_id):
         return redirect(url_for('live_game', fixture_id=fixture_id))
 
     return render_template('live_game_edit.html', fixture=fixture, game_stats=game_stats)
-
 
 
 @app.route('/live_game/<int:game_id>', methods=['GET'])
@@ -817,5 +832,27 @@ def get_all_goals():
     }), 200
 
 
+@app.route('/admin/availability_matrix')
+@admin_required
+def availability_matrix():
+    # Fetch all users
+    users = User.query.all()
+
+    # Fetch all fixtures
+    fixtures = Game.query.order_by(Game.Date.asc()).all()
+
+    # Fetch availability
+    availability = UserAvailability.query.all()
+
+    # Create a dictionary to map availability
+    availability_map = {}
+    for avail in availability:
+        if avail.game_id not in availability_map:
+            availability_map[avail.game_id] = {}
+        availability_map[avail.game_id][avail.user_id] = avail.available
+
+    return render_template('admin/availability_matrix.html', users=users, fixtures=fixtures, availability_map=availability_map)
+
+
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=9999)
+    app.run(debug=True, host='127.0.0.1', port=9999)

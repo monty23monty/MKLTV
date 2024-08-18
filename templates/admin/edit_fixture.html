@@ -3,16 +3,27 @@
 {% block content %}
 <h1>Edit Fixture</h1>
 <div class="form-container">
-    <form method="POST" class="form">
-        {{ form.hidden_tag() }}
-        <label for="DateTime">Date and Time:</label>
-        {{ form.DateTime(class_="form-input", id="datetime-input") }}
-        <label for="Location">Location:</label>
-        {{ form.Location(class_="form-input", id="location-input") }}
-        <label for="HomeTeamID">Home Team:</label>
-        {{ form.HomeTeamID(class_="form-input", id="home-team-input") }}
-        <label for="AwayTeamID">Away Team:</label>
-        {{ form.AwayTeamID(class_="form-input", id="away-team-input") }}
+    <form method="POST" class="form" action="{{ url_for('edit_fixture', fixture_id=fixture.GameID) }}">
+        <label for="datetime-input">Date and Time:</label>
+        <input type="datetime-local" name="DateTime" id="datetime-input" class="form-input" value="{{ fixture.Date|replace(' ', 'T') }}">
+
+        <label for="location-input">Location:</label>
+        <input type="text" name="Location" id="location-input" class="form-input" value="{{ fixture.Location }}">
+
+        <label for="home-team-input">Home Team:</label>
+        <select name="HomeTeamID" id="home-team-input" class="form-input">
+            {% for team in teams %}
+            <option value="{{ team.TeamID }}" {% if team.TeamID == fixture.HomeTeamID %}selected{% endif %}>{{ team.TeamName }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="away-team-input">Away Team:</label>
+        <select name="AwayTeamID" id="away-team-input" class="form-input">
+            {% for team in teams %}
+            <option value="{{ team.TeamID }}" {% if team.TeamID == fixture.AwayTeamID %}selected{% endif %}>{{ team.TeamName }}</option>
+            {% endfor %}
+        </select>
+
         <button type="submit" class="form-button">Update Fixture</button>
     </form>
     <a href="{{ url_for('fixtures') }}" class="teams-button">Back to Fixtures</a>

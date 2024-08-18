@@ -1,51 +1,12 @@
 services:
-  db:
-    image: postgres:15
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  migrate:
-    image: leovzdc/web:latest
-    command: ["migrate"]
-    volumes:
-      - .:/app
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
-      - FLASK_ENV=development
-
-  init-script:
-    image: leovzdc/web:latest
-    command: ["init-script"]
-    depends_on:
-      - migrate
-    environment:
-      PGPASSWORD: postgres
-
   web:
-    image: leovzdc/web:latest
-    command: ["web"]
-    volumes:
-      - .:/app
-    ports:
-      - "5000:5000"
-    depends_on:
-      - init-script
+    image: leovzdc/web:latest  # Specify the image from Docker Hub
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
-      - FLASK_ENV=development
-      - SECRET_KEY=uerguerhgiuoehgeurih
+      - AWS_ACCESS_KEY_ID=AKIA5H7J64PHPBTYTBH4
 
-volumes:
-  postgres_data:
+      - DATABASE_URL=postgresql://postgres:postgres@192.168.0.18:5432/MKLv0.2
+    ports:
+      - "5000:5000"  # Map the container's port to your host's port
+    volumes:
+      - ./data:/app/data  # Mount local directories or files if needed
+    restart: always  # Optional: Restart policy

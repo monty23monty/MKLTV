@@ -1,13 +1,13 @@
 {% extends "admin/base.html" %}
 {% block content %}
-<h1>Allocate Staff to Fixture</h1>
+<h1>Allocate Staff to Game</h1>
 <div class="form-container">
     <form method="POST" action="{{ url_for('allocate_staff') }}" class="form" id="allocation-form">
-        <!-- Fixture, User, and Position Selectors -->
-        <label for="fixture_id">Fixture:</label>
-        <select name="fixture_id" id="fixture_id" class="form-input" onchange="updateUsers()">
-            {% for fixture in fixture_choices %}
-            <option value="{{ fixture[0] }}">{{ fixture[1] }}</option>
+        <!-- Game, User, and Position Selectors -->
+        <label for="game_id">Game:</label>
+        <select name="game_id" id="game_id" class="form-input" onchange="updateUsers()">
+            {% for game in game_choices %}
+            <option value="{{ game[0] }}">{{ game[1] }}</option>
             {% endfor %}
         </select>
 
@@ -46,23 +46,23 @@
                 </tr>
             </thead>
             <tbody>
-                {% for fixture in fixtures %}
-                <tr style="background-color: {% if fixture.GameID in unpublished_fixtures %}#555555{% else %}white{% endif %}; color: {% if fixture.GameID in unpublished_fixtures %}#FFFFFF{% else %}#000000{% endif %};">
-                    <td>{{ fixture.home_team.TeamName }}</td>
-                    <td>{{ fixture.away_team.TeamName }}</td>
-                    <td>{{ fixture.Date.split(' ')[0] }}</td>
-                    <td>{{ fixture.Date.split(' ')[1] }}</td>
+                {% for game in games %}
+                <tr style="background-color: {% if game.GameID in unpublished_games %}#555555{% else %}white{% endif %}; color: {% if game.GameID in unpublished_games %}#FFFFFF{% else %}#000000{% endif %};">
+                    <td>{{ game.home_team.TeamName }}</td>
+                    <td>{{ game.away_team.TeamName }}</td>
+                    <td>{{ game.Date.split(' ')[0] }}</td>
+                    <td>{{ game.Date.split(' ')[1] }}</td>
                     {% for position in positions %}
                         <td>
-                            {% if allocation_table[fixture.GameID][position.id] %}
-                                <a href="#" class="allocation-link" data-fixture-id="{{ fixture.GameID }}" data-user-id="{{ allocation_table[fixture.GameID][position.id]['user_id'] }}" data-position-id="{{ position.id }}">{{ allocation_table[fixture.GameID][position.id]['username'] }}</a>
+                            {% if allocation_table[game.GameID][position.id] %}
+                                <a href="#" class="allocation-link" data-game-id="{{ game.GameID }}" data-user-id="{{ allocation_table[game.GameID][position.id]['user_id'] }}" data-position-id="{{ position.id }}">{{ allocation_table[game.GameID][position.id]['username'] }}</a>
                             {% else %}
                                 ---
                             {% endif %}
                         </td>
                     {% endfor %}
                     <td>
-                        <form method="POST" action="{{ url_for('publish_allocations', fixture_id=fixture.GameID) }}">
+                        <form method="POST" action="{{ url_for('publish_allocations', game_id=game.GameID) }}">
                             <button type="submit" class="form-button">Publish</button>
                         </form>
                     </td>
@@ -73,15 +73,13 @@
     </div>
 </div>
 
-
-
 <!-- Modal for editing allocations -->
 <div id="allocationModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Manage Allocation</h2>
         <form id="modalForm" method="POST">
-            <input type="hidden" id="modal-fixture-id" name="fixture_id">
+            <input type="hidden" id="modal-game-id" name="game_id">
             <input type="hidden" id="modal-user-id" name="user_id">
             <input type="hidden" id="modal-position-id" name="position_id">
             <div class="form-group">
@@ -100,9 +98,14 @@
 
 <script>
 function updateUsers() {
-    var fixture_id = document.getElementById('fixture_id').value;
-    fetch(`/get_available_users?fixture_id=${fixture_id}`)
-        .then(response => response.json())
+    var game_id = document.getElementById('game_id').value;
+    fetch(`/get_available_users?game_id=${game_id}`)
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error); });
+            }
+            return response.json();
+        })
         .then(data => {
             var userSelect = document.getElementById('user_id');
             userSelect.innerHTML = '';
@@ -112,8 +115,13 @@ function updateUsers() {
                 option.text = user.username;
                 userSelect.add(option);
             });
+        })
+        .catch(error => {
+            console.error('Error fetching users:', error);
+            // Handle the error, maybe display a message to the user
         });
 }
+
 
 document.addEventListener("DOMContentLoaded", function() {
     var modal = document.getElementById("allocationModal");
@@ -124,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll(".allocation-link").forEach(function(link) {
         link.onclick = function() {
             modal.style.display = "block";
-            document.getElementById("modal-fixture-id").value = this.getAttribute("data-fixture-id");
+            document.getElementById("modal-game-id").value = this.getAttribute("data-game-id");
             document.getElementById("modal-user-id").value = this.getAttribute("data-user-id");
             document.getElementById("modal-position-id").value = this.getAttribute("data-position-id");
             form.action = "{{ url_for('move_allocation') }}"; // Set default action to move

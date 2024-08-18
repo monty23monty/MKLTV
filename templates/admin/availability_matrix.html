@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h1>Availability Matrix</h1>
+
+<div class="availability-matrix-container">
+    <table class="availability-matrix">
+        <thead>
+            <tr>
+                <th>Fixture</th>
+                {% for user in users %}
+                    <th>{{ user.username }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for fixture in fixtures %}
+                <tr>
+                    <td>{{ fixture.home_team.TeamName }} vs {{ fixture.away_team.TeamName }}<br>{{ fixture.Date }}</td>
+                    {% for user in users %}
+                        <td class="{% if availability_map.get(fixture.GameID, {}).get(user.id, False) %}available{% else %}unavailable{% endif %}">
+                            {% if availability_map.get(fixture.GameID, {}).get(user.id, False) %}
+                                ✓
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .availability-matrix {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .availability-matrix th,
+    .availability-matrix td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .availability-matrix th {
+        background-color: #f2f2f2;
+    }
+
+    .available {
+        background-color: #c6efce;
+    }
+
+    .unavailable {
+        background-color: #ffc7ce;
+    }
+</style>
+
+{% endblock %}

@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="82ad31be-d8ee-40cb-97a7-0b5b321576d5" name="Changes" comment="Removed Fixture table&#10;Added SOG">
-      <change afterPath="$PROJECT_DIR$/migrations/versions/7c563e3b8f78_.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/public/live_game_view.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/public/live_game_view.html" afterDir="false" />
+    <list default="true" id="82ad31be-d8ee-40cb-97a7-0b5b321576d5" name="Changes" comment="v1.0">
+      <change afterPath="$PROJECT_DIR$/templates/admin/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,8 +19,8 @@
         <option value="Python Script" />
         <option value="Dockerfile" />
         <option value="SQL File" />
-        <option value="HTML File" />
         <option value="CSS File" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -41,7 +38,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="Publishing" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -69,6 +66,9 @@
     &quot;repository&quot;: &quot;MKLTV&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -83,11 +83,13 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
     "DefaultHtmlFileTemplate": "HTML File",
+    "Docker.docker.executor": "Run",
     "Flask server.MKL FLASK.executor": "Run",
     "Python.app.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Publishing",
+    "git-widget-placeholder": "Deployed-v1",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "C:/Users/leohe/PycharmProjects/MKL FLASK/migrations/versions",
     "list.type.of.created.stylesheet": "CSS",
@@ -154,7 +156,27 @@
       <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
+    <configuration name="Unnamed (1)" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="envFilePath" value="" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="docker" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="imageTag" value="leovzdc/web" />
+          <option name="buildOnly" value="true" />
+          <option name="sourceFilePath" value="Dockerfile" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
     <list>
+      <item itemvalue="Docker.docker" />
+      <item itemvalue="Docker.Unnamed (1)" />
       <item itemvalue="Flask server.MKL FLASK" />
       <item itemvalue="Python.app" />
     </list>
@@ -183,7 +205,7 @@
       <workItem from="1722432767276" duration="483000" />
       <workItem from="1722433758897" duration="13017000" />
       <workItem from="1723467447838" duration="20475000" />
-      <workItem from="1723897130262" duration="3442000" />
+      <workItem from="1723897130262" duration="22323000" />
     </task>
     <task id="LOCAL-00001" summary="Going to Docker">
       <option name="closed" value="true" />
@@ -233,7 +255,23 @@
       <option name="project" value="LOCAL" />
       <updated>1723503114441</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="attemt deploy">
+      <option name="closed" value="true" />
+      <created>1723903317678</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1723903317678</updated>
+    </task>
+    <task id="LOCAL-00008" summary="v1.0">
+      <option name="closed" value="true" />
+      <created>1723998308218</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1723998308218</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -247,10 +285,12 @@
     <MESSAGE value="quick patch" />
     <MESSAGE value="i think it works" />
     <MESSAGE value="Removed Fixture table&#10;Added SOG" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed Fixture table&#10;Added SOG" />
+    <MESSAGE value="attemt deploy" />
+    <MESSAGE value="v1.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="v1.0" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/MKL_FLASK$MKL_FLASK.coverage" NAME="MKL FLASK Coverage Results" MODIFIED="1720621349308" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/MKL_FLASK$app.coverage" NAME="app Coverage Results" MODIFIED="1723897211055" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/MKL_FLASK$MKL_FLASK.coverage" NAME="MKL FLASK Coverage Results" MODIFIED="1723994541910" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/MKL_FLASK$app.coverage" NAME="app Coverage Results" MODIFIED="1723998205848" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

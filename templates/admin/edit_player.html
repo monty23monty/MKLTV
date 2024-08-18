@@ -2,8 +2,9 @@
 
 {% block content %}
 <h1>Edit Player</h1>
-<div class="form-container">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <form method="POST" action="{{ url_for('edit_player', player_id=player.PlayerID) }}">
+
+    <div class="form-container">
 
     <div>
         <label for="FirstName">First Name:</label>

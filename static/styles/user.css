@@ -2,22 +2,22 @@
     font-family: 'Proxima Nova Bold';
     src: url('../fonts/Bold.otf') format('opentype');
 }
+/* Base Styles */
 body {
     margin: 0;
     padding: 0;
     font-family: 'Proxima Nova Bold', sans-serif;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .container {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    width: 100%;
     font-family: 'Proxima Nova Bold', sans-serif;
-
 }
 
+/* Sidebar Styles */
 .sidebar {
     height: 100%;
     width: 250px;
@@ -27,6 +27,7 @@ body {
     background-color: #000000;
     color: #fff;
     transition: all 0.3s;
+    z-index: 1000;
 }
 
 .sidebar-header {
@@ -50,71 +51,54 @@ body {
 .sidebar ul {
     list-style-type: none;
     padding: 0;
-    margin: 0;
-    margin-bottom: 50px;
+    margin: 0 0 50px;
 }
 
 .sidebar ul li {
     border-bottom: 1px solid #fff;
     text-align: center;
-    transition: background-color 0.3s ease; /* Transition for hover effect */
+    transition: background-color 0.3s ease;
 }
 
 .sidebar ul li a {
-    display: block; 
-    padding: 15px; 
+    display: block;
+    padding: 15px;
     color: #fff;
-    text-decoration: none; 
-    transition: color 0.3s ease; 
+    text-decoration: none;
+    transition: color 0.3s ease;
 }
 
 .sidebar ul li a:hover, .sidebar ul li a:focus {
-    background-color: #333; 
+    background-color: #333;
     color: #d8b95a;
 }
 
 .logout-container {
     position: absolute;
     bottom: 0;
-    width: 100%; 
-  }
-  
+    width: 100%;
+}
 
-  .logout-button {
+.logout-button {
     display: block;
     padding: 15px;
     color: #fff;
     text-align: center;
     text-decoration: none;
     border-top: 1px solid #fff;
-  }
-  
+}
 
-  .logout-button:hover {
+.logout-button:hover {
     background-color: #333;
-    color: #d8b95a; 
-    }
+    color: #d8b95a;
+}
 
 .home-container {
     position: absolute;
-    bottom: 49;
-    width: 100%; 
-  }
-  
-  .home-button {
-    display: block;
-    padding: 15px;
-    color: #fff;
-    text-align: center;
-    text-decoration: none;
-    border-top: 1px solid #fff;
-  }
-  
+    bottom: 49px;
+    width: 100%;
+}
 
-  .home-button:hover {
-    background-color: #333;
-    color: #d8b95a; 
-    }
 .home-button {
     display: block;
     padding: 15px;
@@ -122,13 +106,127 @@ body {
     text-align: center;
     text-decoration: none;
     border-top: 1px solid #fff;
-  }
-  
+}
 
-  .home-button:hover {
+.home-button:hover {
     background-color: #333;
-    color: #d8b95a; 
+    color: #d8b95a;
+}
+
+/* Content Styles */
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: margin-left 0.3s ease;
+}
+
+/* Navbar Styles for Mobile */
+.navbar {
+    background-color: #000000;
+    padding: 10px;
+    position: relative;
+    width: 100%;
+    z-index: 1001;
+}
+
+.navbar-header {
+    display: flex;
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+    width: 100%;
+    position: relative;
+}
+
+.navbar-toggle {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #fff;
+    position: absolute;
+    left: 10px; /* Position the hamburger icon on the left */
+    cursor: pointer;
+}
+
+.navbar-title {
+    color: #d8b95a;
+    font-size: 1.5em;
+    text-align: center; /* Center the title text */
+}
+
+/* Navbar Links */
+.navbar-links {
+    display: none; /* Hide links initially */
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.navbar-links li {
+    margin: 10px 0;
+}
+
+.navbar-links li a {
+    color: #d8b95a;
+    text-decoration: none;
+    font-size: 1.2em;
+}
+
+.navbar-links li a:hover {
+    color: #fff;
+}
+
+/* Display Navbar Links on Toggle */
+.navbar-links.navbar-open {
+    display: flex; /* Show links when toggled */
+}
+@media only screen and (min-width: 768px) {
+    .navbar {
+        display: none; /* Hide navbar on desktop */
     }
+
+    .sidebar {
+        display: block; /* Show sidebar on desktop */
+    }
+
+    .content {
+        margin-left: 250px; /* Add margin to content when sidebar is open */
+    }
+}
+/* Media Query for Mobile Devices */
+@media only screen and (max-width: 768px) {
+    .sidebar {
+        display: none; /* Hide sidebar on mobile */
+    }
+
+    .navbar {
+        display: flex; /* Show navbar on mobile */
+        flex-direction: column;
+        align-items: center;
+
+    }
+
+    .container {
+        width: 100%;
+    }
+
+    .content {
+        width: 100% !important; /* Ensure content is full width on mobile */
+        padding: 10px;
+        margin-left: 0; /* Remove margin when sidebar is hidden */
+    }
+}
+
+
+
+/* Add transition for showing/hiding the sidebar */
+.sidebar.sidebar-open {
+    transform: translateX(0);
+}
 
 .form {
     width: 80%;
@@ -174,33 +272,6 @@ body {
     font-size: large;
 }
 
-.user {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    width: 80%;
-    height: 50px;
-    border: 1px solid rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    padding: 10px;
-    margin: 10px;
-    font-size: large;
-}
-
-.user .user-row {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    width: 80%;
-    height: 50px;
-    border: 1px solid rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    padding: 10px;
-    margin: 10px 0;
-    font-size: large;
-}
 
 .user .user-row .user-cell {
     display: flex;
@@ -362,30 +433,39 @@ body {
 /* Add these styles to admin.css */
 
 .allocations-table-container {
-    width: 80%;
-    max-height: 400px; /* Adjust the height as needed */
-    overflow-y: auto; /* Adds vertical scroll */
-    border: 1px solid #ccc; /* Adds border around the container */
-    margin-top: 20px; /* Adds space between form and table */
+    width: 100%;
+    overflow-x: auto; /* Allows horizontal scrolling if needed */
 }
 
 .allocations-table table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed; /* Ensures the table takes up the full width */
 }
 
 .allocations-table th, .allocations-table td {
-    padding: 10px;
-    border: 1px solid #000; /* Adds border to table cells */
-    text-align: center;
-    vertical-align: middle;
-    font-size: large;
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+    word-wrap: break-word; /* Ensures long text will wrap to the next line */
 }
 
+/* Ensure the header is bold and stands out */
 .allocations-table th {
-    background-color: #000000;
+    background-color: #000;
     color: #d8b95a;
 }
+
+/* Add media query for smaller devices */
+@media screen and (max-width: 768px) {
+    .allocations-table th, .allocations-table td {
+        font-size: 14px; /* Adjust font size for better readability */
+    }
+    h1 {
+        font-size: 24px; /* Adjust heading size on mobile */
+    }
+}
+
 
 /* Add these styles to admin.css */
 
@@ -418,20 +498,6 @@ body {
 
 .position-item:hover {
     background-color: #eaeaea;
-}
-
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-    padding-top: 60px;
 }
 
 .modal-content {

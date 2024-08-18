@@ -25,8 +25,8 @@ class Team(db.Model):
 
     # Relationships
     players = db.relationship('Player', backref='team')
-    home_games = db.relationship('Game', foreign_keys='Game.HomeTeamID', backref='home_team_details')
-    away_games = db.relationship('Game', foreign_keys='Game.AwayTeamID', backref='away_team_details')
+    home_games = db.relationship('Game', foreign_keys='Game.HomeTeamID', backref='home_team_details', overlaps="home_team,home_games")
+    away_games = db.relationship('Game', foreign_keys='Game.AwayTeamID', backref='away_team_details', overlaps="away_team,away_games")
 
 
 class Game(db.Model):
@@ -41,9 +41,10 @@ class Game(db.Model):
     completed = db.Column(db.Boolean)
 
     # Relationships
-    home_team = db.relationship('Team', foreign_keys=[HomeTeamID])
-    away_team = db.relationship('Team', foreign_keys=[AwayTeamID])
+    home_team = db.relationship('Team', foreign_keys=[HomeTeamID], backref='home_team', overlaps="home_games,home_team_details")
+    away_team = db.relationship('Team', foreign_keys=[AwayTeamID], backref='away_team', overlaps="away_games,away_team_details")
     game_stats = db.relationship('GameStats', backref='game', cascade='all, delete-orphan')
+
 
 
 class Player(db.Model):

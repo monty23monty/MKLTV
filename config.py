@@ -11,12 +11,12 @@ from flask import render_template, redirect, url_for
 
 
 AWS_REGION = "eu-west-2"  # e.g., "us-west-2"
-SENDER_EMAIL = "no-reply@leoroberts.uk"
+SENDER_EMAIL = "no-reply@lightningtv.co.uk"
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
 app.config['SECURITY_PASSWORD_SALT'] = 'my_precious_two'
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL',
-                                                  'postgresql://postgres:12345@localhost:5432/MKLv0.2')
+                                                  'postgresql://postgres:postgres@localhost:5432/MKLv0.2')
 
 
 ses_client = boto3.client('ses', region_name=AWS_REGION)

@@ -31,10 +31,47 @@
             <a href="{{  url_for("logout")}}" class="logout-button">Logout</a>
         </div>
       </div>
+    <!-- Navbar for Mobile -->
+        <nav class="navbar">
+            <div class="navbar-header">
+                <button class="navbar-toggle" onclick="toggleNavbar()">☰</button>
+                <span class="navbar-title">MKL Matchnight</span>
+            </div>
+            <ul class="navbar-links">
+                <li><a href="{{ url_for("availability") }}">Availability</a> </li>
+                <li><a href="{{ url_for("my_allocations") }}">My Games</a></li>
+                {% if is_admin %}
+                    <li><a href="{{ url_for('admin')}}">Admin</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('home')}}">Home</a></li>
+                <li><a href="{{  url_for("logout")}}">Logout</a></li>
+            </ul>
+        </nav>
       <div class="content">
         {% block content %}
         {% endblock %}
       </div>
     </div>
+  <script>
+        function toggleNavbar() {
+            var navbarLinks = document.querySelector('.navbar-links');
+            navbarLinks.classList.toggle('navbar-open');
+        }
+
+        function adjustContentMargin() {
+            var sidebar = document.querySelector('.sidebar');
+            var content = document.querySelector('.content');
+
+            if (window.innerWidth > 768) {
+                content.style.marginLeft = sidebar.offsetWidth + 'px';
+            } else {
+                content.style.marginLeft = '0';
+            }
+        }
+
+        window.addEventListener('resize', adjustContentMargin);
+        window.addEventListener('load', adjustContentMargin);
+    </script>
   </body>
+
 </html>
