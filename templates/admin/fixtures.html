@@ -35,14 +35,18 @@
                     <td>{{ fixture.away_team }}</td>
                     <td>{{ fixture.date }}</td>
                     <td>{{ fixture.location }}</td>
-                    <td>{{ fixture.status }}</td>
+                    {% if fixture.live %}
+                    <td>Live</td>
+                    {% else %}
+                    <td>Scheduled</td>
+                    {% endif %}
                     <td>
-                        {% if fixture.status == 'Scheduled' %}
+                        {% if not(fixture.live) %}
                         <form action="{{ url_for('make_fixture_live', fixture_id=fixture.id) }}" method="post" style="display:inline;">
                             <button type="submit" class="form-button">Go Live</button>
                         </form>
                         {% endif %}
-                        <form action="{{ url_for('edit_fixture', fixture_id=fixture.id) }}" method="post" style="display:inline;">
+                        <form action="{{ url_for('edit_fixture', fixture_id=fixture.id) }}" method="get" style="display:inline;">
                             <button type="submit" class="form-button">Edit</button>
                         </form>
                         <form action="{{ url_for('delete_fixture', fixture_id=fixture.id) }}" method="post" style="display:inline;">

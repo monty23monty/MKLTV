@@ -1,34 +1,57 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <h1>Live Game - Edit Mode</h1>
-    <h2>{{ fixture.home_team.TeamName }} vs {{ fixture.away_team.TeamName }}</h2>
-    <p>Date: {{ fixture.Date }}</p>
-    <p>Location: {{ fixture.Location }}</p>
-
-    <form method="POST">
-        <div class="stats-table">
-            <h3>Game Statistics</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Statistic</th>
-                        <th>{{ fixture.home_team.TeamName }}</th>
-                        <th>{{ fixture.away_team.TeamName }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Shots on Goal (SOG)</td>
-                        <td><input type="number" name="home_sog" value="{{ game_stats.home_sog }}"></td>
-                        <td><input type="number" name="away_sog" value="{{ game_stats.away_sog }}"></td>
-                    </tr>
-                    <!-- Add more stats as needed -->
-                </tbody>
-            </table>
+<h1>Live Game - Edit Mode</h1>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/live_game.css') }}">
+<div class="scoreboard">
+    <div class="team-section home-team">
+        <div class="shots-on-goal">
+            <label for="lightning-shots">SHOTS ON GOAL</label>
+            <input type="text" id="lightning-shots" name="home_sog" placeholder="{{ game_stats.home_sog }}">
         </div>
-        <button type="submit" class="btn">Update Stats</button>
-    </form>
+        <div class="team-info">
+            <div class="team-name">HOME</div>
+            <div class="team-name">{{ fixture.home_team.TeamName }}</div>
+            <input type="text" id="lightning-score" name="home_score" placeholder="0">
+        </div>
+    </div>
+
+    <div class="time-section">
+        <div class="time-display">
+            <label for="period-time">TIME</label>
+            <input type="text" id="period-time" name="period_time" placeholder="10:56">
+        </div>
+        <div class="logo-and-period">
+            <div class="team-logo home-logo">
+                <img src="{{ url_for('static', filename='logos/' + fixture.home_team.TeamName + '.png') }}" alt="{{ fixture.home_team.TeamName }} Logo">
+            </div>
+            <div class="period-display">
+                <label for="period">PERIOD</label>
+                <input type="text" id="period" name="period" placeholder="2">
+            </div>
+            <div class="team-logo away-logo">
+                <img src="{{ url_for('static', filename='logos/' + fixture.away_team.TeamName + '.png') }}" alt="{{ fixture.away_team.TeamName }} Logo">
+            </div>
+        </div>
+    </div>
+
+    <div class="team-section away-team">
+        <div class="shots-on-goal">
+            <label for="moskitos-shots">SHOTS ON GOAL</label>
+            <input type="text" id="moskitos-shots" name="away_sog" placeholder="{{ game_stats.away_sog }}">
+        </div>
+        <div class="team-info">
+            <div class="team-name">GUEST</div>
+            <div class="team-name">{{ fixture.away_team.TeamName }}</div>
+            <input type="text" id="moskitos-score" name="away_score" placeholder="0">
+        </div>
+    </div>
 </div>
+
+<form method="POST" class="game-stats-form">
+    <button type="submit" class="update-stats-button">Update Stats</button>
+</form>
+
+<a href="{{ url_for('fixtures') }}" class="back-button">Back to Fixtures</a>
+
 {% endblock %}

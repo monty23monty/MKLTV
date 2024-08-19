@@ -1,11 +1,12 @@
-from collections import defaultdict
 from flask import request, render_template, flash, redirect, url_for, session, jsonify
+import requests
+from flask import request, render_template, flash, redirect, url_for, session, jsonify
+
+from config import bcrypt, login_manager, app, send_allocation_email, generate_token, confirm_token
 from decorators import admin_required, user_required
 from models import User, Team, Player, FixtureStaff, StaffPosition, UserAvailability, FixtureStaffDraft, \
     GameStats, Game
-from config import bcrypt, login_manager, app, send_allocation_email, generate_token, confirm_token
 from models import db
-from datetime import timedelta, datetime
 
 
 @login_manager.user_loader
@@ -245,12 +246,16 @@ def edit_fixture(fixture_id):
         fixture_end_time = datetime.strptime(fixture.Date, '%Y-%m-%d %H:%M:%S') + timedelta(hours=3)
         fixture.EndTime = fixture_end_time.strftime('%Y-%m-%d %H:%M:%S')
 
+        # Update live status based on checkbox
+        fixture.live = 'Live' in request.form
+
         db.session.commit()
         flash('Fixture has been updated!', 'success')
         return redirect(url_for('fixtures'))
 
     teams = Team.query.order_by('TeamName').all()
     return render_template('admin/edit_fixture.html', fixture=fixture, teams=teams)
+
 
 
 
@@ -579,11 +584,14 @@ def logout():
     return redirect(url_for('home'))
 
 
+from collections import defaultdict
+
+
 @app.route('/availability', methods=['GET', 'POST'])
 @user_required
 def availability():
     user_id = session['user_id']
-    games = db.session.query(Game).all()
+    games = db.session.query(Game).order_by(Game.Date.asc()).all()  # Sort the games by date
 
     if request.method == 'POST':
         for game in games:
@@ -659,6 +667,9 @@ def make_fixture_live(fixture_id):
         return redirect(url_for('fixtures'))
 
     game_stats = GameStats.query.filter_by(game_id=fixture.GameID).first()
+
+    db.session.commit()
+
     if not game_stats:
         game_stats = GameStats(
             game_id=fixture.GameID,
@@ -678,7 +689,7 @@ def live_game(fixture_id):
     game_stats = GameStats.query.filter_by(game_id=fixture.GameID).first()
 
     if request.method == 'POST':
-        # Only process updates if the user is logged in and it's a POST request
+        # Only process updates if the user is logged in, and it's a POST request
         game_stats.home_sog = request.form.get('home_sog', game_stats.home_sog)
         game_stats.away_sog = request.form.get('away_sog', game_stats.away_sog)
         # Update other stats here
@@ -792,7 +803,7 @@ def add_goal(team_id):
     else:
         return jsonify({'error': 'Team ID not found in the current live game.'}), 404
 
-# GET /goals/<teamid>: Retrieve the goal count for the given team
+
 @app.route('/goals/<int:team_id>', methods=['GET'])
 def get_team_goals(team_id):
     live_game = Game.query.filter_by(live=True).first()
@@ -852,6 +863,106 @@ def availability_matrix():
         availability_map[avail.game_id][avail.user_id] = avail.available
 
     return render_template('admin/availability_matrix.html', users=users, fixtures=fixtures, availability_map=availability_map)
+
+
+from datetime import datetime, timedelta
+
+@app.route('/admin/add_games/<int:team_id>', methods=['POST', 'GET'])
+@admin_required
+def add_games(team_id):
+    # Mapping of API team IDs to your database team IDs
+    team_id_mapping = {
+        5: 1,   # API ID 5 -> Your DB ID 1 (Milton Keynes Lightning)
+        14: 2,  # API ID 14 -> Your DB ID 2 (Moskitos)
+        1: 3,   # API ID 1 -> Your DB ID 3 (Berkshire BEES)
+        4: 9,   # API ID 4 -> Your DB ID 5 (Leeds Knights)
+        8: 5,   # API ID 8 -> Your DB ID 6 (Sheffield Steeldogs)
+        9: 6,   # API ID 9 -> Your DB ID 7 (Solway Sharks)
+        3: 7,   # API ID 3 -> Your DB ID 8 (Hull Seahawks)
+        2: 8,   # API ID 2 -> Your DB ID 9 (Bristol Pitbulls)
+        6: 10,  # API ID 6 -> Your DB ID 10 (Peterborough Phantoms)
+        11: 11, # API ID 11 -> Your DB ID 11 (Telford Tigers)
+        10: 12, # API ID 10 -> Your DB ID 12 (Swindon Wildcats)
+        7: 4    # API ID 7 -> Your DB ID 4 (Romford Raiders)
+    }
+
+    leagues = [1, 3]
+    season = 2024
+    milton_keynes_arena = "Planet Ice, 1 S Row, Elder Gate, Milton Keynes, MK9 1DL"
+
+    api_url_template = "https://s3-eu-west-1.amazonaws.com/nihl.hokejovyzapis.cz/league-team-matches/{season}/{league}/{team}.json"
+
+    for league_id in leagues:
+        api_url = api_url_template.format(season=season, league=league_id, team=team_id)
+
+        response = requests.get(api_url)
+
+        if response.status_code != 200:
+            flash(f"Failed to fetch data for League {league_id}.", 'danger')
+            continue
+
+        try:
+            data = response.json()
+            print(f"API Response for League {league_id}: {data}")  # Debugging line
+        except ValueError:
+            flash(f"Invalid JSON response for League {league_id}.", 'danger')
+            continue
+
+        # The response is expected to be a dictionary with a 'matches' key containing a list of games
+        if 'matches' not in data or not isinstance(data['matches'], list):
+            flash(f"Unexpected data structure from API for League {league_id}.", 'danger')
+            continue
+
+        games = data['matches']  # Access the list of games
+
+        for game in games:
+            if not isinstance(game, dict):
+                flash(f"Invalid game data format for League {league_id}.", 'danger')
+                continue
+
+            # Only save home games
+            if game['arena'] != milton_keynes_arena:
+                continue
+
+            home_team_id = team_id_mapping.get(game['home']['id'])
+            away_team_id = team_id_mapping.get(game['guest']['id'])
+
+            if home_team_id is None:
+                print(f"Unrecognized home team ID {game['home']['id']} for game: {game}")
+                flash(f"Unrecognized home team ID {game['home']['id']} in League {league_id}.", 'danger')
+                continue
+
+            if away_team_id is None:
+                print(f"Unrecognized away team ID {game['guest']['id']} for game: {game}")
+                flash(f"Unrecognized away team ID {game['guest']['id']} in League {league_id}.", 'danger')
+                continue
+
+            # Calculate end time as 3 hours after faceoff
+            faceoff_time = datetime.strptime(game['start_date'], '%Y-%m-%d %H:%M:%S')
+            end_time = faceoff_time + timedelta(hours=3)
+
+            existing_game = Game.query.filter_by(GameID=game['id']).first()
+            if existing_game:
+                flash(f"Game {game['id']} already exists in the database.", 'info')
+                continue
+
+            new_game = Game(
+                GameID=game['id'],
+                Date=game['start_date'],
+                EndTime=end_time.strftime('%Y-%m-%d %H:%M:%S'),
+                Location="Home",  # Set location to "Home"
+                HomeTeamID=home_team_id,
+                AwayTeamID=away_team_id,
+                live=False,
+                completed=game['status'] == 'AFTER_MATCH'
+            )
+
+            db.session.add(new_game)
+
+        db.session.commit()
+        flash(f"Home games for League {league_id} have been added.", 'success')
+
+    return jsonify({"message": "Home games added successfully"}), 201
 
 
 if __name__ == '__main__':

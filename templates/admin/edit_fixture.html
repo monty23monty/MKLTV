@@ -24,6 +24,10 @@
             {% endfor %}
         </select>
 
+        <!-- Checkbox for live toggle -->
+        <label for="live-input">Live:</label>
+        <input type="checkbox" name="Live" id="live-input" class="form-input" {% if fixture.live %}checked{% endif %}>
+
         <button type="submit" class="form-button">Update Fixture</button>
     </form>
     <a href="{{ url_for('fixtures') }}" class="teams-button">Back to Fixtures</a>

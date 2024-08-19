@@ -1,0 +1,78 @@
+.scoreboard {
+    background-color: black;
+    border-radius: 10px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.team-section {
+    flex: 1;
+}
+
+.team-logo img {
+    width: 50px;
+    height: auto;
+}
+
+.shots-on-goal, .team-info, .time-display, .period-display {
+    margin: 10px 0;
+}
+
+input[type="text"] {
+    background-color: black;
+    color: white;
+    border: none;
+    text-align: center;
+    width: 100px;
+    margin: 5px auto;
+    font-size: 24px;
+}
+
+input[type="text"]:focus {
+    outline: none;
+}
+
+.time-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo-and-period {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.period-display {
+    margin: 0 20px;
+}
+
+.time-display {
+    margin-bottom: 10px;
+}
+
+.update-stats-button, .back-button {
+    display: block;
+    margin: 20px auto;
+    background-color: #d8b95a;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    font-size: 18px;
+    border-radius: 5px;
+}
+
+.update-stats-button:hover, .back-button:hover {
+    background-color: #B89B3A;
+}

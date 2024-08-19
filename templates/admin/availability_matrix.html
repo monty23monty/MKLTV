@@ -7,18 +7,18 @@
     <table class="availability-matrix">
         <thead>
             <tr>
-                <th>Fixture</th>
+                <th class="fixture-column">Fixture</th>
                 {% for user in users %}
-                    <th>{{ user.username }}</th>
+                    <th class="user-column">{{ user.username }}</th>
                 {% endfor %}
             </tr>
         </thead>
         <tbody>
             {% for fixture in fixtures %}
                 <tr>
-                    <td>{{ fixture.home_team.TeamName }} vs {{ fixture.away_team.TeamName }}<br>{{ fixture.Date }}</td>
+                    <td class="fixture-column">{{ fixture.home_team.TeamName }} vs {{ fixture.away_team.TeamName }}<br>{{ fixture.Date }}</td>
                     {% for user in users %}
-                        <td class="{% if availability_map.get(fixture.GameID, {}).get(user.id, False) %}available{% else %}unavailable{% endif %}">
+                        <td class="user-column {% if availability_map.get(fixture.GameID, {}).get(user.id, False) %}available{% else %}unavailable{% endif %}">
                             {% if availability_map.get(fixture.GameID, {}).get(user.id, False) %}
                                 ✓
                             {% endif %}
@@ -31,9 +31,14 @@
 </div>
 
 <style>
+    .availability-matrix-container {
+        overflow-x: auto; /* Allow horizontal scrolling if the table is too wide */
+    }
+
     .availability-matrix {
         width: 100%;
         border-collapse: collapse;
+        table-layout: fixed; /* Ensures columns are evenly distributed */
     }
 
     .availability-matrix th,
@@ -41,10 +46,17 @@
         border: 1px solid #ddd;
         padding: 8px;
         text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    .availability-matrix th {
-        background-color: #f2f2f2;
+    .fixture-column {
+        width: 20%; /* Relative width for the fixture column */
+    }
+
+    .user-column {
+        width: {{ 80 / users|length }}%; /* Distribute remaining 80% width equally among user columns */
     }
 
     .available {
@@ -53,6 +65,13 @@
 
     .unavailable {
         background-color: #ffc7ce;
+    }
+
+    @media (max-width: 768px) {
+        .fixture-column,
+        .user-column {
+            width: auto; /* Let columns adjust automatically on smaller screens */
+        }
     }
 </style>
 
