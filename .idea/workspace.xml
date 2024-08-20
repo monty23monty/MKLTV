@@ -4,17 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="82ad31be-d8ee-40cb-97a7-0b5b321576d5" name="Changes" comment="v1.0">
-      <change afterPath="$PROJECT_DIR$/static/logos/Lightning.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/logos/Moskitos.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/styles/live_game.css" afterDir="false" />
+    <list default="true" id="82ad31be-d8ee-40cb-97a7-0b5b321576d5" name="Changes" comment="Removed Fixture table&#10;Added SOG">
+      <change afterPath="$PROJECT_DIR$/migrations/versions/1dc54fc52f8e_.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/MKL FLASK.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MKL FLASK.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin/availability_matrix.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/availability_matrix.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin/edit_fixture.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/edit_fixture.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin/fixtures.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/fixtures.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/live_game_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/live_game_edit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,7 +44,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="Publishing" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -75,9 +72,6 @@
     &quot;repository&quot;: &quot;MKLTV&quot;
   }
 }</component>
-  <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
-  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -89,37 +83,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Docker.docker.executor&quot;: &quot;Run&quot;,
-    &quot;Flask server.MKL FLASK.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Deployed-v1&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/leohe/PycharmProjects/MKL FLASK/static/logos&quot;,
-    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Flask server.MKL FLASK.executor": "Run",
+    "Python.app.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "Deployed-v1",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/leohe/PycharmProjects/MKL FLASK/migrations/versions",
+    "list.type.of.created.stylesheet": "CSS",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\static\logos" />
       <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\migrations\versions" />
       <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\static\styles" />
       <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\static" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\static\logos" />
       <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\static" />
       <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\templates\admin" />
       <recent name="C:\Users\leohe\PycharmProjects\MKL FLASK\templates\registration" />
@@ -135,7 +125,6 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.12 (MKL FLASK)" />
       <option name="WORKING_DIRECTORY" value="" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -158,7 +147,6 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.12 (MKL FLASK)" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -167,27 +155,7 @@
       <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Unnamed (1)" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
-      <deployment type="docker-compose.yml">
-        <settings>
-          <option name="envFilePath" value="" />
-        </settings>
-      </deployment>
-      <method v="2" />
-    </configuration>
-    <configuration name="docker" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
-      <deployment type="dockerfile">
-        <settings>
-          <option name="imageTag" value="leovzdc/web" />
-          <option name="buildOnly" value="true" />
-          <option name="sourceFilePath" value="Dockerfile" />
-        </settings>
-      </deployment>
-      <method v="2" />
-    </configuration>
     <list>
-      <item itemvalue="Docker.docker" />
-      <item itemvalue="Docker.Unnamed (1)" />
       <item itemvalue="Flask server.MKL FLASK" />
       <item itemvalue="Python.app" />
     </list>
@@ -216,9 +184,7 @@
       <workItem from="1722432767276" duration="483000" />
       <workItem from="1722433758897" duration="13017000" />
       <workItem from="1723467447838" duration="20475000" />
-      <workItem from="1723897130262" duration="28972000" />
-      <workItem from="1724100134607" duration="393000" />
-      <workItem from="1724100773032" duration="3607000" />
+      <workItem from="1723897130262" duration="3442000" />
     </task>
     <task id="LOCAL-00001" summary="Going to Docker">
       <option name="closed" value="true" />
@@ -268,62 +234,11 @@
       <option name="project" value="LOCAL" />
       <updated>1723503114441</updated>
     </task>
-    <task id="LOCAL-00007" summary="attemt deploy">
-      <option name="closed" value="true" />
-      <created>1723903317678</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1723903317678</updated>
-    </task>
-    <task id="LOCAL-00008" summary="v1.0">
-      <option name="closed" value="true" />
-      <created>1723998308218</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1723998308218</updated>
-    </task>
-    <task id="LOCAL-00009" summary="v1.0">
-      <option name="closed" value="true" />
-      <created>1723998465499</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1723998465499</updated>
-    </task>
-    <task id="LOCAL-00010" summary="v1.0">
-      <option name="closed" value="true" />
-      <created>1723998606183</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1723998606183</updated>
-    </task>
-    <task id="LOCAL-00011" summary="v1.0">
-      <option name="closed" value="true" />
-      <created>1723998672306</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1723998672306</updated>
-    </task>
-    <option name="localTasksCounter" value="12" />
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
@@ -333,12 +248,11 @@
     <MESSAGE value="quick patch" />
     <MESSAGE value="i think it works" />
     <MESSAGE value="Removed Fixture table&#10;Added SOG" />
-    <MESSAGE value="attemt deploy" />
-    <MESSAGE value="v1.0" />
-    <option name="LAST_COMMIT_MESSAGE" value="v1.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed Fixture table&#10;Added SOG" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/MKL_FLASK$MKL_FLASK.coverage" NAME="MKL FLASK Coverage Results" MODIFIED="1723994541910" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/MKL_FLASK$app.coverage" NAME="app Coverage Results" MODIFIED="1724102651785" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/MKLTV$app.coverage" NAME="app Coverage Results" MODIFIED="1724154082120" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/MKL_FLASK$MKL_FLASK.coverage" NAME="MKL FLASK Coverage Results" MODIFIED="1720621349308" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/MKL_FLASK$app.coverage" NAME="app Coverage Results" MODIFIED="1723897211055" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

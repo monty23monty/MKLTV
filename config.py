@@ -7,7 +7,7 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 from itsdangerous import URLSafeTimedSerializer
-from flask import render_template, redirect, url_for
+from flask_socketio import SocketIO
 
 
 AWS_REGION = "eu-west-2"  # e.g., "us-west-2"
@@ -26,7 +26,7 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 migrate = Migrate(app, db)
-
+socketio = SocketIO(app)
 
 
 def send_allocation_email(user_email, subject, body_text):

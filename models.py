@@ -106,5 +106,10 @@ class GameStats(db.Model):
     __tablename__ = 'game_stats'
     id = db.Column(db.Integer, primary_key=True)
     game_id = db.Column(db.Integer, db.ForeignKey('games.GameID'), nullable=False)
+    home_score = db.Column(db.Integer)
+    away_score = db.Column(db.Integer)
+    period = db.Column(db.String(50))
+    clock = db.Column(db.String(50))
     home_sog = db.Column(db.Integer)
     away_sog = db.Column(db.Integer)
+

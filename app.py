@@ -1,12 +1,11 @@
+from collections import defaultdict
 from flask import request, render_template, flash, redirect, url_for, session, jsonify
-import requests
-from flask import request, render_template, flash, redirect, url_for, session, jsonify
-
-from config import bcrypt, login_manager, app, send_allocation_email, generate_token, confirm_token
 from decorators import admin_required, user_required
 from models import User, Team, Player, FixtureStaff, StaffPosition, UserAvailability, FixtureStaffDraft, \
     GameStats, Game
+from config import bcrypt, login_manager, app, send_allocation_email, generate_token, confirm_token
 from models import db
+from datetime import timedelta, datetime
 
 
 @login_manager.user_loader
@@ -23,7 +22,7 @@ def admin():
 
 
 @app.route('/admin/register', methods=['get', 'POST'])
-@admin_required
+
 def register():
     if request.method == 'POST':
         username = request.form['username'].upper()
@@ -38,10 +37,7 @@ def register():
         set_password_url = url_for('set_password', token=token, _external=True)
 
         subject = "Complete Your Registration"
-        body_text = (f"Dear {username},\n\n You have been registered for a lightning TV {role} account.\n\n"
-                     f"Your username is: {username}\n\n"
-                     f"Please click the link below to set your password and complete your registration:\n\n"
-                     f"{set_password_url}\n\nIf you have any questions, please contact Leo\n\nThank you.")
+        body_text = f"Dear {username},\n\nPlease click the link below to set your password and complete your registration:\n\n{set_password_url}\n\nThank you."
 
         send_allocation_email(user.email, subject, body_text)
 
@@ -236,18 +232,10 @@ def edit_fixture(fixture_id):
     if request.method == 'POST':
         fixture.HomeTeamID = request.form['HomeTeamID']
         fixture.AwayTeamID = request.form['AwayTeamID']
-
-        # Here, we capture the combined date and time from the DateTime input
-        fixture.Date = request.form['DateTime'].replace('T', ' ') + ":00"
-
+        fixture.Date = f"{request.form['Date']} {request.form['Time']}:00"
         fixture.Location = request.form['Location']
-
-        # Calculate the fixture end time, assuming it's 3 hours after the start time
         fixture_end_time = datetime.strptime(fixture.Date, '%Y-%m-%d %H:%M:%S') + timedelta(hours=3)
         fixture.EndTime = fixture_end_time.strftime('%Y-%m-%d %H:%M:%S')
-
-        # Update live status based on checkbox
-        fixture.live = 'Live' in request.form
 
         db.session.commit()
         flash('Fixture has been updated!', 'success')
@@ -255,8 +243,6 @@ def edit_fixture(fixture_id):
 
     teams = Team.query.order_by('TeamName').all()
     return render_template('admin/edit_fixture.html', fixture=fixture, teams=teams)
-
-
 
 
 @app.route('/admin/fixtures/<int:fixture_id>/delete', methods=['POST'])
@@ -304,15 +290,8 @@ def new_team():
 @app.route('/admin/teams/<int:team_id>')
 @admin_required
 def team_detail(team_id):
-    # Fetch the team by ID, or return a 404 error if not found
     team = Team.query.get_or_404(team_id)
-
-    # Fetch all players associated with this team
-    players = Player.query.filter_by(TeamID=team.TeamID).all()
-
-    # Render the template and pass the team and players data to it
-    return render_template('admin/team_detail.html', team=team, players=players)
-
+    return render_template('admin/team_detail.html', team=team)
 
 
 @app.route('/admin/players/new', methods=['GET', 'POST'])
@@ -403,13 +382,13 @@ def staff_positions():
 @admin_required
 def allocate_staff():
     if request.method == 'POST':
-        game_id = request.form['game_id']  # Update to 'game_id' in the form
+        game_id = request.form['fixture_id']  # Update to 'game_id' in the form
         user_id = request.form['user_id']
         position_id = request.form['position_id']
-        app.logger.debug(f"Received game_id: {game_id}, user_id: {user_id}, position_id: {position_id}")
-        game = Game.query.get(game_id)
-        if game is None:
-            flash('Selected game does not exist!', 'danger')
+
+        fixture = Game.query.get(game_id)
+        if fixture is None:
+            flash('Selected fixture does not exist!', 'danger')
             return redirect(url_for('allocate_staff'))
 
         draft_allocation = FixtureStaffDraft.query.filter_by(game_id=game_id, user_id=user_id).first()
@@ -427,13 +406,15 @@ def allocate_staff():
         flash('Staff allocation draft saved!', 'success')
         return redirect(url_for('allocate_staff'))
 
-    games = Game.query.all()
+    # Retrieve all fixtures, ordered by date
+    fixtures = Game.query.order_by(Game.Date.asc()).all()
     users = User.query.all()
     positions = StaffPosition.query.all()
 
-    game_choices = [
-        (game.GameID, f"{game.home_team.TeamName} vs {game.away_team.TeamName} on {game.Date}") for game
-        in games]
+    # Create choices for the fixtures, users, and positions
+    fixture_choices = [
+        (fixture.GameID, f"{fixture.home_team.TeamName} vs {fixture.away_team.TeamName} on {fixture.Date}") for fixture
+        in fixtures]
     user_choices = [(user.id, user.username) for user in users]
     position_choices = [(position.id, position.name) for position in positions]
 
@@ -441,35 +422,38 @@ def allocate_staff():
 
     allocation_table = {}
     user_dict = {user.id: {'username': user.username, 'user_id': user.id} for user in users}
-    unpublished_games = set()
+    unpublished_fixtures = set()
 
-    for game in games:
-        allocation_table[game.GameID] = {position.id: None for position in positions}
+    # Initialize the allocation table for each fixture and position
+    for fixture in fixtures:
+        allocation_table[fixture.GameID] = {position.id: None for position in positions}
 
+    # Populate the allocation table with draft allocations
     for draft_allocation in draft_allocations:
         allocation_table[draft_allocation.game_id][draft_allocation.position_id] = user_dict[draft_allocation.user_id]  # Updated to game_id
-        unpublished_games.add(draft_allocation.game_id)  # Updated to game_id
+        unpublished_fixtures.add(draft_allocation.game_id)  # Updated to game_id
 
     return render_template(
         'admin/allocate_staff.html',
-        game_choices=game_choices,
+        fixture_choices=fixture_choices,
         user_choices=user_choices,
         position_choices=position_choices,
         allocation_table=allocation_table,
-        games=games,
+        fixtures=fixtures,
         positions=positions,
-        unpublished_games=unpublished_games
+        unpublished_fixtures=unpublished_fixtures
     )
 
 
-@app.route('/admin/publish_allocations/<int:game_id>', methods=['POST'])
+
+@app.route('/admin/publish_allocations/<int:fixture_id>', methods=['POST'])
 @admin_required
-def publish_allocations(game_id):
-    # Remove existing allocations for this game in the published table
-    FixtureStaff.query.filter_by(game_id=game_id).delete()  # Changed fixture_id to game_id
+def publish_allocations(fixture_id):
+    # Remove existing allocations for this fixture in the published table
+    FixtureStaff.query.filter_by(game_id=fixture_id).delete()  # Changed fixture_id to game_id
 
     # Copy draft allocations to the published table without clearing the draft table
-    draft_allocations = FixtureStaffDraft.query.filter_by(game_id=game_id).all()  # Changed fixture_id to game_id
+    draft_allocations = FixtureStaffDraft.query.filter_by(game_id=fixture_id).all()  # Changed fixture_id to game_id
 
     for draft in draft_allocations:
         published_allocation = FixtureStaff(
@@ -485,9 +469,9 @@ def publish_allocations(game_id):
 
         # Send email notification to the affected user
         user = User.query.get(draft.user_id)
-        game = Game.query.get(game_id)  # Changed Fixture to Game and fixture_id to game_id
+        fixture = Game.query.get(fixture_id)  # Changed Fixture to Game and fixture_id to game_id
         subject = "Allocation Change Notification"
-        body_text = f"Dear {user.username},\n\nYour allocation for the game between {game.home_team.TeamName} and {game.away_team.TeamName} on {game.Date} has been updated. Your new position is {position_name}.\n\nThank you."
+        body_text = f"Dear {user.username},\n\nYour allocation for the fixture between {fixture.home_team.TeamName} and {fixture.away_team.TeamName} on {fixture.Date} has been updated. Your new position is {position_name}.\n\nThank you."
         send_allocation_email(user.email, subject, body_text)
 
     db.session.commit()
@@ -495,11 +479,12 @@ def publish_allocations(game_id):
     return redirect(url_for('allocate_staff'))
 
 
+
 @app.route('/admin/move_allocation', methods=['POST'])
 @admin_required
 def move_allocation():
     try:
-        game_id = int(request.form.get('game_id'))  # Updated to game_id
+        fixture_id = int(request.form.get('fixture_id'))
         user_id = int(request.form.get('user_id'))
         position_id = int(request.form.get('position_id'))
         new_position_id = int(request.form.get('new_position_id'))
@@ -507,7 +492,7 @@ def move_allocation():
         flash('Invalid data received!', 'danger')
         return redirect(url_for('allocate_staff'))
 
-    allocation = db.session.query(FixtureStaffDraft).filter_by(game_id=game_id, user_id=user_id, position_id=position_id).first()  # Updated to game_id
+    allocation = db.session.query(FixtureStaffDraft).filter_by(fixture_id=fixture_id, user_id=user_id, position_id=position_id).first()
     if allocation:
         allocation.position_id = new_position_id
         db.session.commit()
@@ -522,14 +507,14 @@ def move_allocation():
 @admin_required
 def remove_allocation():
     try:
-        game_id = int(request.form.get('game_id'))  # Updated to game_id
+        fixture_id = int(request.form.get('fixture_id'))
         user_id = int(request.form.get('user_id'))
         position_id = int(request.form.get('position_id'))
     except ValueError:
         flash('Invalid data received!', 'danger')
         return redirect(url_for('allocate_staff'))
 
-    allocation = FixtureStaffDraft.query.filter_by(game_id=game_id, user_id=user_id, position_id=position_id).first()  # Updated to game_id
+    allocation = FixtureStaffDraft.query.filter_by(game_id=fixture_id, user_id=user_id, position_id=position_id).first()  # Changed fixture_id to game_id
     if allocation:
         db.session.delete(allocation)
         db.session.commit()
@@ -538,6 +523,7 @@ def remove_allocation():
         flash('Draft allocation not found!', 'danger')
 
     return redirect(url_for('allocate_staff'))
+
 
 
 @app.route('/')
@@ -584,48 +570,44 @@ def logout():
     return redirect(url_for('home'))
 
 
-from collections import defaultdict
-
-
 @app.route('/availability', methods=['GET', 'POST'])
 @user_required
 def availability():
     user_id = session['user_id']
-    games = db.session.query(Game).order_by(Game.Date.asc()).all()  # Sort the games by date
-
+    fixtures = db.session.query(Game).all()
     if request.method == 'POST':
-        for game in games:
-            available = request.form.get(f'game_{game.GameID}', 'off') == 'on'
-            user_availability = UserAvailability.query.filter_by(user_id=user_id, game_id=game.GameID).first()
-
+        for fixture in fixtures:
+            available = request.form.get(f'fixture_{fixture.GameID}', 'off') == 'on'
+            user_availability = UserAvailability.query.filter_by(user_id=user_id, fixture_id=fixture.GameID).first()
             if user_availability:
                 user_availability.available = available
             else:
-                new_availability = UserAvailability(user_id=user_id, game_id=game.GameID, available=available)
+                new_availability = UserAvailability(user_id=user_id, fixture_id=fixture.GameID, available=available)
                 db.session.add(new_availability)
-
         db.session.commit()
         flash('Availability updated!', 'success')
         return redirect(url_for('availability'))
 
-    user_availabilities = {ua.game_id: ua.available for ua in UserAvailability.query.filter_by(user_id=user_id).all()}
+    user_availabilities = {ua.fixture_id: ua.available for ua in
+                           UserAvailability.query.filter_by(user_id=user_id).all()}
 
-    games_by_month = defaultdict(list)
-    for game in games:
-        month = datetime.strptime(game.Date, "%Y-%m-%d %H:%M:%S").strftime("%B %Y")
-        games_by_month[month].append(game)
+    fixtures_by_month = defaultdict(list)
+    for fixture in fixtures:
+        month = datetime.strptime(fixture.Date, "%Y-%m-%d %H:%M:%S").strftime("%B %Y")
+        fixtures_by_month[month].append(fixture)
 
-    return render_template('availability.html', games_by_month=games_by_month, user_availabilities=user_availabilities)
+    return render_template('availability.html', fixtures_by_month=fixtures_by_month,
+                           user_availabilities=user_availabilities)
 
 
 @app.route('/get_available_users', methods=['GET'])
 def get_available_users():
-    game_id = request.args.get('game_id')
-    if not game_id:
-        return jsonify({'error': 'No game ID provided'}), 400
+    fixture_id = request.args.get('fixture_id')
+    if not fixture_id:
+        return jsonify({'error': 'No fixture ID provided'}), 400
 
     available_users = db.session.query(User).join(UserAvailability).filter(
-        UserAvailability.game_id == game_id,
+        UserAvailability.fixture_id == fixture_id,
         UserAvailability.available == True
     ).all()
 
@@ -634,18 +616,16 @@ def get_available_users():
     return jsonify(user_list)
 
 
-
 @app.route('/my_allocations')
 @user_required
 def my_allocations():
     user_id = session['user_id']
     allocations = db.session.query(FixtureStaff).filter_by(user_id=user_id).all()
 
-    # Build dictionaries for related games and positions
-    games = {allocation.game_id: allocation.game for allocation in allocations}
+    fixtures = {allocation.fixture_id: allocation.fixture for allocation in allocations}
     positions = {allocation.position_id: allocation.position for allocation in allocations}
 
-    return render_template('my_allocations.html', games=games, positions=positions, allocations=allocations)
+    return render_template('my_allocations.html', fixtures=fixtures, positions=positions, allocations=allocations)
 
 
 @app.route('/admin/fixtures/<int:fixture_id>/live', methods=['POST'])
@@ -667,9 +647,6 @@ def make_fixture_live(fixture_id):
         return redirect(url_for('fixtures'))
 
     game_stats = GameStats.query.filter_by(game_id=fixture.GameID).first()
-
-    db.session.commit()
-
     if not game_stats:
         game_stats = GameStats(
             game_id=fixture.GameID,
@@ -689,7 +666,7 @@ def live_game(fixture_id):
     game_stats = GameStats.query.filter_by(game_id=fixture.GameID).first()
 
     if request.method == 'POST':
-        # Only process updates if the user is logged in, and it's a POST request
+        # Only process updates if the user is logged in and it's a POST request
         game_stats.home_sog = request.form.get('home_sog', game_stats.home_sog)
         game_stats.away_sog = request.form.get('away_sog', game_stats.away_sog)
         # Update other stats here
@@ -698,6 +675,7 @@ def live_game(fixture_id):
         return redirect(url_for('live_game', fixture_id=fixture_id))
 
     return render_template('live_game_edit.html', fixture=fixture, game_stats=game_stats)
+
 
 
 @app.route('/live_game/<int:game_id>', methods=['GET'])
@@ -803,7 +781,7 @@ def add_goal(team_id):
     else:
         return jsonify({'error': 'Team ID not found in the current live game.'}), 404
 
-
+# GET /goals/<teamid>: Retrieve the goal count for the given team
 @app.route('/goals/<int:team_id>', methods=['GET'])
 def get_team_goals(team_id):
     live_game = Game.query.filter_by(live=True).first()
@@ -843,6 +821,43 @@ def get_all_goals():
     }), 200
 
 
+@app.route('/live_scoreboard_data', methods=['POST'])
+def live_scoreboard_data():
+    try:
+        data = request.json
+        print(f"Received data: {data}")
+
+        # Extract the relevant information
+        home_score = data.get('Home score.Text')
+        away_score = data.get('Away Score.Text')
+        period = data.get('Period.Text')
+        clock = data.get('clock.Text')
+
+        # For simplicity, let's assume you're always updating the same game
+        # Replace with logic to determine the correct game_id
+        game_id = 1  # Example game_id
+
+        # Fetch or create game stats
+        game_stats = GameStats.query.filter_by(game_id=game_id).first()
+
+        if game_stats:
+            game_stats.home_score = home_score if home_score is not None else game_stats.home_score
+            game_stats.away_score = away_score if away_score is not None else game_stats.away_score
+            game_stats.period = period if period is not None else game_stats.period
+            game_stats.clock = clock if clock is not None else game_stats.clock
+        else:
+            # Create a new record if it doesn't exist
+            new_stats = GameStats(game_id=game_id, home_score=home_score, away_score=away_score, period=period, clock=clock)
+            db.session.add(new_stats)
+
+        # Commit the transaction
+        db.session.commit()
+
+        return jsonify({"status": "success", "received": data})
+    except Exception as e:
+        print(f"Error processing request: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/admin/availability_matrix')
 @admin_required
 def availability_matrix():
@@ -867,103 +882,5 @@ def availability_matrix():
 
 from datetime import datetime, timedelta
 
-@app.route('/admin/add_games/<int:team_id>', methods=['POST', 'GET'])
-@admin_required
-def add_games(team_id):
-    # Mapping of API team IDs to your database team IDs
-    team_id_mapping = {
-        5: 1,   # API ID 5 -> Your DB ID 1 (Milton Keynes Lightning)
-        14: 2,  # API ID 14 -> Your DB ID 2 (Moskitos)
-        1: 3,   # API ID 1 -> Your DB ID 3 (Berkshire BEES)
-        4: 9,   # API ID 4 -> Your DB ID 5 (Leeds Knights)
-        8: 5,   # API ID 8 -> Your DB ID 6 (Sheffield Steeldogs)
-        9: 6,   # API ID 9 -> Your DB ID 7 (Solway Sharks)
-        3: 7,   # API ID 3 -> Your DB ID 8 (Hull Seahawks)
-        2: 8,   # API ID 2 -> Your DB ID 9 (Bristol Pitbulls)
-        6: 10,  # API ID 6 -> Your DB ID 10 (Peterborough Phantoms)
-        11: 11, # API ID 11 -> Your DB ID 11 (Telford Tigers)
-        10: 12, # API ID 10 -> Your DB ID 12 (Swindon Wildcats)
-        7: 4    # API ID 7 -> Your DB ID 4 (Romford Raiders)
-    }
-
-    leagues = [1, 3]
-    season = 2024
-    milton_keynes_arena = "Planet Ice, 1 S Row, Elder Gate, Milton Keynes, MK9 1DL"
-
-    api_url_template = "https://s3-eu-west-1.amazonaws.com/nihl.hokejovyzapis.cz/league-team-matches/{season}/{league}/{team}.json"
-
-    for league_id in leagues:
-        api_url = api_url_template.format(season=season, league=league_id, team=team_id)
-
-        response = requests.get(api_url)
-
-        if response.status_code != 200:
-            flash(f"Failed to fetch data for League {league_id}.", 'danger')
-            continue
-
-        try:
-            data = response.json()
-            print(f"API Response for League {league_id}: {data}")  # Debugging line
-        except ValueError:
-            flash(f"Invalid JSON response for League {league_id}.", 'danger')
-            continue
-
-        # The response is expected to be a dictionary with a 'matches' key containing a list of games
-        if 'matches' not in data or not isinstance(data['matches'], list):
-            flash(f"Unexpected data structure from API for League {league_id}.", 'danger')
-            continue
-
-        games = data['matches']  # Access the list of games
-
-        for game in games:
-            if not isinstance(game, dict):
-                flash(f"Invalid game data format for League {league_id}.", 'danger')
-                continue
-
-            # Only save home games
-            if game['arena'] != milton_keynes_arena:
-                continue
-
-            home_team_id = team_id_mapping.get(game['home']['id'])
-            away_team_id = team_id_mapping.get(game['guest']['id'])
-
-            if home_team_id is None:
-                print(f"Unrecognized home team ID {game['home']['id']} for game: {game}")
-                flash(f"Unrecognized home team ID {game['home']['id']} in League {league_id}.", 'danger')
-                continue
-
-            if away_team_id is None:
-                print(f"Unrecognized away team ID {game['guest']['id']} for game: {game}")
-                flash(f"Unrecognized away team ID {game['guest']['id']} in League {league_id}.", 'danger')
-                continue
-
-            # Calculate end time as 3 hours after faceoff
-            faceoff_time = datetime.strptime(game['start_date'], '%Y-%m-%d %H:%M:%S')
-            end_time = faceoff_time + timedelta(hours=3)
-
-            existing_game = Game.query.filter_by(GameID=game['id']).first()
-            if existing_game:
-                flash(f"Game {game['id']} already exists in the database.", 'info')
-                continue
-
-            new_game = Game(
-                GameID=game['id'],
-                Date=game['start_date'],
-                EndTime=end_time.strftime('%Y-%m-%d %H:%M:%S'),
-                Location="Home",  # Set location to "Home"
-                HomeTeamID=home_team_id,
-                AwayTeamID=away_team_id,
-                live=False,
-                completed=game['status'] == 'AFTER_MATCH'
-            )
-
-            db.session.add(new_game)
-
-        db.session.commit()
-        flash(f"Home games for League {league_id} have been added.", 'success')
-
-    return jsonify({"message": "Home games added successfully"}), 201
-
-
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=9999)
+    app.run(host='127.0.0.1', port=9999, debug=True)
