@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from config import db
 from flask_login import UserMixin
 
@@ -108,3 +110,38 @@ class GameStats(db.Model):
     game_id = db.Column(db.Integer, db.ForeignKey('games.GameID'), nullable=False)
     home_sog = db.Column(db.Integer)
     away_sog = db.Column(db.Integer)
+
+
+class LiveGame(db.Model):
+    __tablename__ = 'live_game'
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('games.GameID'), nullable=False, unique=True)
+    home_team_score = db.Column(db.Integer, default=0)
+    away_team_score = db.Column(db.Integer, default=0)
+    period = db.Column(db.String(10), default="1st")  # Changed to string to match period format
+    clock = db.Column(db.String(10), default='20:00')  # Renamed from time_remaining to clock
+    home_team_sog = db.Column(db.Integer, default=0)
+    away_team_sog = db.Column(db.Integer, default=0)
+    last_updated = db.Column(db.DateTime, default=datetime.now)
+
+    game = db.relationship('Game', backref=db.backref('live_game', uselist=False))
+    scoreboard = db.relationship('Scoreboard', backref='live_game', uselist=False, cascade="all, delete-orphan")
+
+class Scoreboard(db.Model):
+    __tablename__ = 'scoreboard'
+    id = db.Column(db.Integer, primary_key=True)
+    home_score = db.Column(db.Integer, nullable=False, default=0)
+    away_score = db.Column(db.Integer, nullable=False, default=0)
+    clock = db.Column(db.String(10), nullable=False, default="20:00")
+    period = db.Column(db.String(10), nullable=False, default="1st")
+    home_penalty_player1 = db.Column(db.String(50), default="")
+    home_penalty_player2 = db.Column(db.String(50), default="")
+    home_penalty_time1 = db.Column(db.String(10), default="")
+    home_penalty_time2 = db.Column(db.String(10), default="")
+    away_penalty_player1 = db.Column(db.String(50), default="")
+    away_penalty_player2 = db.Column(db.String(50), default="")
+    away_penalty_time1 = db.Column(db.String(10), default="")
+    away_penalty_time2 = db.Column(db.String(10), default="")
+    last_updated = db.Column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
+
+    live_game_id = db.Column(db.Integer, db.ForeignKey('live_game.id'), nullable=False)

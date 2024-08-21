@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Admin Live Game: {{ game.home_team.TeamName }} vs {{ game.away_team.TeamName }}</h1>
+    <p>Date: {{ game.Date }}</p>
+    <p>Location: {{ game.Location }}</p>
+
+    <h2>Edit Live Stats</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label for="home_sog">Home Shots on Goal</label>
+            <input type="number" id="home_sog" name="home_sog" value="{{ game.game_stats.home_sog }}" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="away_sog">Away Shots on Goal</label>
+            <input type="number" id="away_sog" name="away_sog" value="{{ game.game_stats.away_sog }}" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Update Stats</button>
+    </form>
+<a href="{{ url_for('complete_live_game') }}" class="btn btn-success">Complete Game</a>
+</div>
+{% endblock %}

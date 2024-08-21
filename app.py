@@ -5,7 +5,7 @@ from flask import request, render_template, flash, redirect, url_for, session, j
 from config import bcrypt, login_manager, app, send_allocation_email, generate_token, confirm_token
 from decorators import admin_required, user_required
 from models import User, Team, Player, FixtureStaff, StaffPosition, UserAvailability, FixtureStaffDraft, \
-    GameStats, Game
+    GameStats, Game, LiveGame, Scoreboard
 from models import db
 
 
@@ -23,7 +23,6 @@ def admin():
 
 
 @app.route('/admin/register', methods=['get', 'POST'])
-@admin_required
 def register():
     if request.method == 'POST':
         username = request.form['username'].upper()
@@ -160,22 +159,13 @@ def delete_user():
 @app.route('/admin/fixtures')
 @admin_required
 def fixtures():
-    current_time = datetime.now()
     fixtures = Game.query.filter(Game.completed == False).order_by(Game.Date.asc()).all()
 
     fixtures_data = []
     for fixture in fixtures:
-        start_time = datetime.strptime(fixture.Date, '%Y-%m-%d %H:%M:%S')
-        end_time = datetime.strptime(fixture.EndTime, '%Y-%m-%d %H:%M:%S') if fixture.EndTime else None
-        if start_time <= current_time <= end_time:
-            fixture.live = True
+        status = "Scheduled"
+        if fixture.live:
             status = "Live"
-        elif current_time < start_time:
-            status = "Scheduled"
-        else:
-            status = "Completed"
-
-        db.session.commit()
 
         home_team = Team.query.get(fixture.HomeTeamID)
         away_team = Team.query.get(fixture.AwayTeamID)
@@ -185,8 +175,7 @@ def fixtures():
             'away_team': away_team.TeamName,
             'date': fixture.Date,
             'location': fixture.Location,
-            'status': status,
-            'live': fixture.live
+            'status': status
         })
 
     return render_template('admin/fixtures.html', fixtures=fixtures_data)
@@ -403,7 +392,7 @@ def staff_positions():
 @admin_required
 def allocate_staff():
     if request.method == 'POST':
-        game_id = request.form['game_id']  # Update to 'game_id' in the form
+        game_id = request.form['game_id']
         user_id = request.form['user_id']
         position_id = request.form['position_id']
         app.logger.debug(f"Received game_id: {game_id}, user_id: {user_id}, position_id: {position_id}")
@@ -417,7 +406,7 @@ def allocate_staff():
             draft_allocation.position_id = position_id
         else:
             draft_allocation = FixtureStaffDraft(
-                game_id=game_id,  # Updated to game_id
+                game_id=game_id,
                 user_id=user_id,
                 position_id=position_id
             )
@@ -427,13 +416,13 @@ def allocate_staff():
         flash('Staff allocation draft saved!', 'success')
         return redirect(url_for('allocate_staff'))
 
-    games = Game.query.all()
+    games = Game.query.order_by(Game.Date.asc()).all()  # Sort games by date
     users = User.query.all()
     positions = StaffPosition.query.all()
 
     game_choices = [
-        (game.GameID, f"{game.home_team.TeamName} vs {game.away_team.TeamName} on {game.Date}") for game
-        in games]
+        (game.GameID, f"{game.home_team.TeamName} vs {game.away_team.TeamName} on {game.Date}") for game in games
+    ]
     user_choices = [(user.id, user.username) for user in users]
     position_choices = [(position.id, position.name) for position in positions]
 
@@ -447,8 +436,8 @@ def allocate_staff():
         allocation_table[game.GameID] = {position.id: None for position in positions}
 
     for draft_allocation in draft_allocations:
-        allocation_table[draft_allocation.game_id][draft_allocation.position_id] = user_dict[draft_allocation.user_id]  # Updated to game_id
-        unpublished_games.add(draft_allocation.game_id)  # Updated to game_id
+        allocation_table[draft_allocation.game_id][draft_allocation.position_id] = user_dict[draft_allocation.user_id]
+        unpublished_games.add(draft_allocation.game_id)
 
     return render_template(
         'admin/allocate_staff.html',
@@ -648,77 +637,96 @@ def my_allocations():
     return render_template('my_allocations.html', games=games, positions=positions, allocations=allocations)
 
 
-@app.route('/admin/fixtures/<int:fixture_id>/live', methods=['POST'])
+@app.route('/admin/set_live/<int:game_id>', methods=['POST'])
 @admin_required
-def make_fixture_live(fixture_id):
-    fixture = Game.query.get_or_404(fixture_id)
-    current_time = datetime.now()
-    start_time = datetime.strptime(fixture.Date, '%Y-%m-%d %H:%M:%S')
-    end_time = datetime.strptime(fixture.EndTime, '%Y-%m-%d %H:%M:%S')
-
-    if start_time <= current_time <= end_time:
-        fixture.live = True
-        flash('The game is now live automatically because the current time is within the game time.', 'success')
-    elif current_time < start_time:
-        fixture.live = True
-        flash('The game has been made live.', 'success')
-    else:
-        flash('Cannot make the game live as it is outside the scheduled time.', 'danger')
+def set_live(game_id):
+    # Ensure no other game is live
+    live_game = Game.query.filter_by(live=True).first()
+    if live_game:
+        flash('Another game is currently live. Please complete it before starting a new one.', 'danger')
         return redirect(url_for('fixtures'))
 
-    game_stats = GameStats.query.filter_by(game_id=fixture.GameID).first()
-
+    # Set the selected game as live
+    game = Game.query.get_or_404(game_id)
+    game.live = True
     db.session.commit()
 
-    if not game_stats:
-        game_stats = GameStats(
-            game_id=fixture.GameID,
-            home_sog=0,
-            away_sog=0,
-        )
-        db.session.add(game_stats)
+    flash(f'Game {game.GameID} is now live!', 'success')
+
+    # Redirect to the live game page (admin view)
+    return redirect(url_for('admin_live_game'))
+
+
+@app.route('/admin/complete_live_game', methods=['GET'])
+@admin_required
+def complete_live_game():
+    # Find the currently live game
+    live_game = Game.query.filter_by(live=True).first()
+
+    if not live_game:
+        flash('No live game to complete.', 'danger')
+        return redirect(url_for('fixtures'))
+
+    # Mark the game as completed
+    live_game.completed = True
+    live_game.live = False
+    db.session.commit()
+
+    # Clear the corresponding LiveGame entry if it exists
+    live_game_data = LiveGame.query.filter_by(game_id=live_game.GameID).first()
+    if live_game_data:
+        db.session.delete(live_game_data)
         db.session.commit()
 
-    return redirect(url_for('live_game', fixture_id=fixture_id))
+    flash(f'Game {live_game.GameID} has been completed and live data cleared.', 'success')
+    return redirect(url_for('fixtures'))
 
 
-@app.route('/fixtures/<int:fixture_id>/live_game', methods=['GET', 'POST'])
-@user_required
-def live_game(fixture_id):
-    fixture = Game.query.get_or_404(fixture_id)  # Note: Using Game instead of Fixture
-    game_stats = GameStats.query.filter_by(game_id=fixture.GameID).first()
+@app.route('/live', methods=['GET'])
+def live_game():
+    # Fetch the current live game record
+    live_game = LiveGame.query.first()  # Assuming only one game can be live at a time
+
+    if live_game:
+        # Access the related Game object via the relationship
+        game = live_game.game
+        if game:
+            # Get the names of the home and away teams
+            home_team_name = game.home_team.TeamName
+            away_team_name = game.away_team.TeamName
+        else:
+            # Handle the case where the related Game record is not found
+            flash('The game associated with the live event does not exist.', 'danger')
+            return redirect(url_for('home'))
+
+        # Render the live game page with the relevant data
+        return render_template('public/live_game.html',
+                               live_game=live_game,
+                               home_team_name=home_team_name,
+                               away_team_name=away_team_name)
+    else:
+        # Render the intermediate page if no live game is active
+        return render_template('public/live_game_intermediate.html')
+
+
+
+@app.route('/admin/live', methods=['GET', 'POST'])
+@admin_required
+def admin_live_game():
+    live_game = Game.query.filter_by(live=True).first()
+
+    if not live_game:
+        return render_template('admin/admin_live_placeholder.html')  # Placeholder if no game is live
 
     if request.method == 'POST':
-        # Only process updates if the user is logged in, and it's a POST request
+        # Handle editable stats here
+        game_stats = GameStats.query.filter_by(game_id=live_game.GameID).first()
         game_stats.home_sog = request.form.get('home_sog', game_stats.home_sog)
         game_stats.away_sog = request.form.get('away_sog', game_stats.away_sog)
-        # Update other stats here
         db.session.commit()
         flash('Stats updated!', 'success')
-        return redirect(url_for('live_game', fixture_id=fixture_id))
 
-    return render_template('live_game_edit.html', fixture=fixture, game_stats=game_stats)
-
-
-@app.route('/live_game/<int:game_id>', methods=['GET'])
-def public_live_game(game_id):
-    # Fetch the game details
-    game = Game.query.get_or_404(game_id)
-    game_stats = GameStats.query.filter_by(game_id=game.GameID).first()
-
-    if not game_stats:
-        flash('Game stats not found.', 'danger')
-        return redirect(url_for('home'))
-
-    # Fetch the home and away team names
-    home_team_name = game.home_team_details.TeamName
-    away_team_name = game.away_team_details.TeamName
-
-    return render_template('public/live_game_view.html',
-                           game=game,
-                           game_stats=game_stats,
-                           home_team=home_team_name,
-                           away_team=away_team_name)
+    return render_template('admin/admin_live_game.html', game=live_game)  # Admin view with editable stats
 
 
 @app.route('/api/sog', methods=['GET'])
@@ -739,25 +747,45 @@ def sog():
         return jsonify({'error': 'No live game found.'}), 404
 
 
-@app.route('/api/sog/<int:team_id>', methods=['GET', 'POST'])
-def sog_team(team_id):
+@app.route('/api/sog/<int:end>', methods=['GET', 'POST'])
+def sog_team(end):
     live_game = Game.query.filter_by(live=True).first()
 
     if not live_game:
+        print('No live game found.')
         return jsonify({'error': 'No live game found.'}), 404
 
-    game_stats = GameStats.query.filter_by(game_id=live_game.GameID).first()
+    Live_game_data = LiveGame.query.filter_by(game_id=live_game.GameID).first()
 
-    if not game_stats:
+    if not Live_game_data:
+        print('Game stats not found for the live game.')
         return jsonify({'error': 'Game stats not found for the live game.'}), 404
 
+    def determine_team_shooting_at_end(period, end):
+        if period in [1, 3]:
+            if end == 2:
+                return live_game.HomeTeamID
+            elif end == 10:
+                return live_game.AwayTeamID
+        elif period == 2:
+            if end == 2:
+                return live_game.AwayTeamID
+            elif end == 10:
+                return live_game.HomeTeamID
+        return None
+
+    team_shooting_at_end = determine_team_shooting_at_end(Live_game_data.period, end)
+
+    if not team_shooting_at_end:
+        return jsonify({'error': 'Invalid end or period.'}), 400
+
     if request.method == 'GET':
-        if team_id == live_game.HomeTeamID:
-            return jsonify({'team_id': team_id, 'sog': game_stats.home_sog}), 200
-        elif team_id == live_game.AwayTeamID:
-            return jsonify({'team_id': team_id, 'sog': game_stats.away_sog}), 200
+        if team_shooting_at_end == live_game.HomeTeamID:
+            return jsonify({'end': end, 'sog': Live_game_data.home_team_sog}), 200
+        elif team_shooting_at_end == live_game.AwayTeamID:
+            return jsonify({'end': end, 'sog': Live_game_data.away_team_sog}), 200
         else:
-            return jsonify({'error': 'Team ID not found in the current live game.'}), 404
+            return jsonify({'error': 'Error determining team shooting at this end.'}), 500
 
     elif request.method == 'POST':
         data = request.get_json()
@@ -766,14 +794,14 @@ def sog_team(team_id):
         if sog_value is None:
             return jsonify({'error': 'SOG value is required.'}), 400
 
-        if team_id == live_game.HomeTeamID:
-            game_stats.home_sog = sog_value
-            updated_sog = game_stats.home_sog
-        elif team_id == live_game.AwayTeamID:
-            game_stats.away_sog = sog_value
-            updated_sog = game_stats.away_sog
+        if team_shooting_at_end == live_game.HomeTeamID:
+            Live_game_data.home_team_sog = sog_value
+            updated_sog = Live_game_data.home_team_sog
+        elif team_shooting_at_end == live_game.AwayTeamID:
+            Live_game_data.away_team_sog = sog_value
+            updated_sog = Live_game_data.away_team_sog
         else:
-            return jsonify({'error': 'Team ID not found in the current live game.'}), 404
+            return jsonify({'error': 'Error determining team shooting at this end.'}), 500
 
         db.session.commit()
         return jsonify({'message': 'SOG updated successfully.', 'sog': updated_sog}), 200
@@ -866,6 +894,7 @@ def availability_matrix():
 
 
 from datetime import datetime, timedelta
+
 
 @app.route('/admin/add_games/<int:team_id>', methods=['POST', 'GET'])
 @admin_required
@@ -964,6 +993,121 @@ def add_games(team_id):
 
     return jsonify({"message": "Home games added successfully"}), 201
 
+@app.route('/api/scoreboard_live_data', methods=['POST'])
+def ingest_scoreboard_data():
+    data = request.get_json()
+
+    # Extract data from the POST request
+    home_score = int(data.get('Home score', 0))
+    away_score = int(data.get('Away Score', 0))
+    clock = data.get('Clock', '20:00')
+    period = data.get('Period', '1st')
+    home_penalty_player1 = data.get('homepenplayer1', '')
+    home_penalty_player2 = data.get('homepenplayer2', '')
+    home_penalty_time1 = data.get('homepentime1', '')
+    home_penalty_time2 = data.get('homepentime2', '')
+    away_penalty_player1 = data.get('awaypenplayer1', '')
+    away_penalty_player2 = data.get('awaypenplayer2', '')
+    away_penalty_time1 = data.get('awaypentime1', '')
+    away_penalty_time2 = data.get('awaypentime2', '')
+
+    # Check if there's a live game entry
+    live_game = LiveGame.query.first()  # Adjust the game_id logic based on your application needs
+
+    if not live_game:
+        # If no live game entry, check if there is a live game in the Game table
+        live_game_record = Game.query.filter_by(live=True).first()
+
+        if not live_game_record:
+            return jsonify({'error': 'No live game found in the Game table.'}), 404
+
+        # Create the LiveGame entry using the live game from the Game table
+        live_game = LiveGame(
+            game_id=live_game_record.GameID,
+            home_team_score=0,
+            away_team_score=0,
+            period="1st",
+            clock="20:00"
+        )
+        db.session.add(live_game)
+        db.session.commit()
+
+        # Reset the scoreboard associated with the live game
+        scoreboard = Scoreboard(
+            home_score=0,
+            away_score=0,
+            clock="20:00",
+            period="1st",
+            home_penalty_player1="",
+            home_penalty_player2="",
+            home_penalty_time1="",
+            home_penalty_time2="",
+            away_penalty_player1="",
+            away_penalty_player2="",
+            away_penalty_time1="",
+            away_penalty_time2="",
+            live_game_id=live_game.id
+        )
+        db.session.add(scoreboard)
+        db.session.commit()
+
+    else:
+        # Update the existing scoreboard record associated with the live game
+        scoreboard = live_game.scoreboard
+
+    # Update the scoreboard with the new data
+    scoreboard.home_score = home_score
+    scoreboard.away_score = away_score
+    scoreboard.clock = clock
+    scoreboard.period = period
+    scoreboard.home_penalty_player1 = home_penalty_player1
+    scoreboard.home_penalty_player2 = home_penalty_player2
+    scoreboard.home_penalty_time1 = home_penalty_time1
+    scoreboard.home_penalty_time2 = home_penalty_time2
+    scoreboard.away_penalty_player1 = away_penalty_player1
+    scoreboard.away_penalty_player2 = away_penalty_player2
+    scoreboard.away_penalty_time1 = away_penalty_time1
+    scoreboard.away_penalty_time2 = away_penalty_time2
+
+    # Update the LiveGame model based on Scoreboard data
+    live_game.home_team_score = home_score
+    live_game.away_team_score = away_score
+    live_game.clock = clock
+    live_game.period = period
+
+    db.session.add(scoreboard)
+    db.session.commit()
+
+    return jsonify({'message': 'Scoreboard data ingested successfully, LiveGame updated/created'}), 200
+
+
+@app.route('/api/scoreboard_live_data', methods=['GET'])
+def get_scoreboard_data():
+    # Find the live game
+    live_game = LiveGame.query.first()  # Adjust according to your game_id logic
+
+    if not live_game or not live_game.scoreboard:
+        return jsonify({'error': 'No scoreboard data available'}), 404
+
+    scoreboard = live_game.scoreboard
+    data = {
+        'Home score': live_game.home_team_score,
+        'Away Score': live_game.away_team_score,
+        'Clock': live_game.clock,
+        'Period': live_game.period,
+        'homepenplayer1': scoreboard.home_penalty_player1,
+        'homepenplayer2': scoreboard.home_penalty_player2,
+        'homepentime1': scoreboard.home_penalty_time1,
+        'homepentime2': scoreboard.home_penalty_time2,
+        'awaypenplayer1': scoreboard.away_penalty_player1,
+        'awaypenplayer2': scoreboard.away_penalty_player2,
+        'awaypentime1': scoreboard.away_penalty_time1,
+        'awaypentime2': scoreboard.away_penalty_time2,
+        'last_updated': scoreboard.last_updated.strftime('%Y-%m-%d %H:%M:%S')
+    }
+
+    return jsonify(data), 200
+
 
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=9999)
+    app.run(debug=True, host='0.0.0.0', port=5000)

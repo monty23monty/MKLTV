@@ -39,25 +39,83 @@ body {
     flex-wrap: wrap;
 }
 
-.stat-column {
-    flex: 1;
-    min-width: 200px;
+body {
+    font-family: Arial, sans-serif;
+    background-color: black;
+    color: white;
+    text-align: center;
 }
 
-.stat-item {
+.scoreboard {
+    width: 80%;
+    margin: 20px auto;
     padding: 10px;
+    border: 5px solid white;
+    background-color: black;
+    color: white;
+}
+
+.teams {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.team {
+    width: 30%;
+    text-align: center;
+}
+
+.team-name {
+    font-size: 2em;
+    color: red;
+}
+
+.team-score {
+    font-size: 3em;
     margin: 10px 0;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 5px;
 }
 
-.stat-item h3 {
-    font-size: 1.2em;
-    margin: 0 0 5px 0;
-}
-
-.stat-item p {
+.penalty-indicator {
     font-size: 1.5em;
-    margin: 0;
+    color: red;
+    margin-top: 10px;
+}
+
+.timer {
+    width: 40%;
+    text-align: center;
+}
+
+.time-display {
+    font-size: 4em;
+    margin: 10px 0;
+}
+
+.period-display {
+    font-size: 2em;
+    margin-top: 10px;
+}
+
+.shots {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 0;
+}
+
+.shots-on-goal {
+    width: 45%;
+    text-align: center;
+    border-top: 2px solid white;
+    padding-top: 10px;
+}
+
+.label {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.shots-count {
+    font-size: 2.5em;
 }

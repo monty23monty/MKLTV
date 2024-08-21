@@ -18,7 +18,7 @@
 <div class="fixtures-container">
     <div class="fixtures-table">
         <table>
-            <thead>
+            <thead style="position: sticky; top: 0; background-color: #000; color: #d8b95a;">
                 <tr>
                     <th>Home Team</th>
                     <th>Away Team</th>
@@ -35,14 +35,10 @@
                     <td>{{ fixture.away_team }}</td>
                     <td>{{ fixture.date }}</td>
                     <td>{{ fixture.location }}</td>
-                    {% if fixture.live %}
-                    <td>Live</td>
-                    {% else %}
-                    <td>Scheduled</td>
-                    {% endif %}
+                    <td>{{ fixture.live and "Live" or "Scheduled" }}</td>
                     <td>
-                        {% if not(fixture.live) %}
-                        <form action="{{ url_for('make_fixture_live', fixture_id=fixture.id) }}" method="post" style="display:inline;">
+                        {% if not fixture.live %}
+                        <form action="{{ url_for('set_live', game_id=fixture.id) }}" method="post" style="display:inline;">
                             <button type="submit" class="form-button">Go Live</button>
                         </form>
                         {% endif %}

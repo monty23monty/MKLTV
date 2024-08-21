@@ -473,6 +473,7 @@ body {
 .allocations-table table {
     width: 100%;
     border-collapse: collapse;
+    position: relative; /* Needed for sticky positioning */
 }
 
 .allocations-table th, .allocations-table td {
@@ -486,7 +487,11 @@ body {
 .allocations-table th {
     background-color: #000000;
     color: #d8b95a;
+    position: sticky;
+    top: 0; /* Makes the header sticky at the top */
+    z-index: 1; /* Ensures the header stays above the table rows */
 }
+
 
 /* Add these styles to admin.css */
 

@@ -1,0 +1,37 @@
+{% extends 'public/base.html' %}
+
+{% block content %}
+<div class="scoreboard">
+    <div class="teams">
+        <div class="team home">
+            <img src="{{ url_for('static', filename='logos/' + home_team_name + '.png') }}" alt="{{ home_team_name }} Logo" style="max-width: 80px;">
+            <div class="team-name">{{ home_team_name }}</div> <!-- Display actual home team name -->
+            <div class="team-score" id="home-goals">{{ live_game.home_team_score }}</div>
+            <div class="penalty-indicator" id="home-penalty"><!-- Penalty Info --></div>
+        </div>
+
+        <div class="timer">
+            <div class="time-display" id="time-display">{{ live_game.clock }}</div> <!-- Corrected from time_remaining to clock -->
+            <div class="period-display" id="period-display">{{ live_game.period }}</div>
+        </div>
+
+        <div class="team visitor">
+            <img src="{{ url_for('static', filename='logos/' + away_team_name + '.png') }}" alt="{{ away_team_name }} Logo" style="max-width: 80px;">
+            <div class="team-name">{{ away_team_name }}</div> <!-- Display actual away team name -->
+            <div class="team-score" id="away-goals">{{ live_game.away_team_score }}</div>
+            <div class="penalty-indicator" id="away-penalty"><!-- Penalty Info --></div>
+        </div>
+    </div>
+
+    <div class="shots">
+        <div class="shots-on-goal">
+            <div class="label">SHOTS ON GOAL</div>
+            <div class="shots-count" id="home-sog">{{ live_game.home_team_sog }}</div>
+        </div>
+        <div class="shots-on-goal">
+            <div class="label">SHOTS ON GOAL</div>
+            <div class="shots-count" id="away-sog">{{ live_game.away_team_sog }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
