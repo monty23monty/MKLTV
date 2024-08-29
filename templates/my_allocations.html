@@ -12,17 +12,29 @@
                     <th>Date</th>
                     <th>Time</th>
                     <th>Position</th>
+                    <th>Assigned Users</th>
                 </tr>
             </thead>
             <tbody>
                 {% for allocation in allocations %}
+                {% if allocation.user_id == session['user_id'] %}
                 <tr>
                     <td>{{ games[allocation.game_id].home_team_details.TeamName }}</td>
                     <td>{{ games[allocation.game_id].away_team_details.TeamName }}</td>
                     <td>{{ games[allocation.game_id].Date.split(' ')[0] }}</td>
                     <td>{{ games[allocation.game_id].Date.split(' ')[1] }}</td>
                     <td>{{ positions[allocation.position_id].name }}</td>
+                    <td>
+                        <ul>
+                            {% for other_allocation in allocations %}
+                            {% if other_allocation.game_id == allocation.game_id %}
+                            <li>{{ users[other_allocation.user_id].username }} - {{ positions[other_allocation.position_id].name }}</li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>

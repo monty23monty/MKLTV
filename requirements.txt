@@ -23,3 +23,5 @@ gunicorn
 boto3~=1.34.158
 botocore~=1.34.158
 requests~=2.32.3
+Flask-SocketIO~=5.3.6
+gevent

@@ -2,7 +2,7 @@ from flask import request, render_template, flash, redirect, url_for, session, j
 import requests
 from flask import request, render_template, flash, redirect, url_for, session, jsonify
 
-from config import bcrypt, login_manager, app, send_allocation_email, generate_token, confirm_token
+from config import bcrypt, login_manager, app, send_allocation_email, generate_token, confirm_token, socketio
 from decorators import admin_required, user_required
 from models import User, Team, Player, FixtureStaff, StaffPosition, UserAvailability, FixtureStaffDraft, \
     GameStats, Game, LiveGame, Scoreboard
@@ -628,13 +628,23 @@ def get_available_users():
 @user_required
 def my_allocations():
     user_id = session['user_id']
-    allocations = db.session.query(FixtureStaff).filter_by(user_id=user_id).all()
 
-    # Build dictionaries for related games and positions
+    # Query for all allocations where the current user is involved
+    user_allocations = db.session.query(FixtureStaff).filter_by(user_id=user_id).all()
+
+    # Get the game IDs the user is assigned to
+    game_ids = [allocation.game_id for allocation in user_allocations]
+
+    # Query for all allocations related to these games
+    allocations = db.session.query(FixtureStaff).filter(FixtureStaff.game_id.in_(game_ids)).all()
+
+    # Build dictionaries for related games, positions, and users
     games = {allocation.game_id: allocation.game for allocation in allocations}
     positions = {allocation.position_id: allocation.position for allocation in allocations}
+    users = {allocation.user_id: allocation.user for allocation in allocations}
 
-    return render_template('my_allocations.html', games=games, positions=positions, allocations=allocations)
+    return render_template('my_allocations.html', games=games, positions=positions, users=users, allocations=allocations)
+
 
 
 @app.route('/admin/set_live/<int:game_id>', methods=['POST'])
@@ -752,38 +762,37 @@ def sog_team(end):
     live_game = Game.query.filter_by(live=True).first()
 
     if not live_game:
-        print('No live game found.')
         return jsonify({'error': 'No live game found.'}), 404
 
-    Live_game_data = LiveGame.query.filter_by(game_id=live_game.GameID).first()
+    live_game_data = LiveGame.query.filter_by(game_id=live_game.GameID).first()
 
-    if not Live_game_data:
-        print('Game stats not found for the live game.')
-        return jsonify({'error': 'Game stats not found for the live game.'}), 404
+    if not live_game_data:
+        return jsonify({'error': 'Live game data not found for the live game.'}), 404
 
     def determine_team_shooting_at_end(period, end):
-        if period in [1, 3]:
+        if period in ["1st", "3rd"]:
             if end == 2:
                 return live_game.HomeTeamID
             elif end == 10:
                 return live_game.AwayTeamID
-        elif period == 2:
+        elif period == "2nd":
             if end == 2:
                 return live_game.AwayTeamID
             elif end == 10:
                 return live_game.HomeTeamID
         return None
 
-    team_shooting_at_end = determine_team_shooting_at_end(Live_game_data.period, end)
+    team_shooting_at_end = determine_team_shooting_at_end(live_game_data.period, end)
 
     if not team_shooting_at_end:
+        print(f"Invalid end or period: {end}, {live_game_data.period}")
         return jsonify({'error': 'Invalid end or period.'}), 400
 
     if request.method == 'GET':
         if team_shooting_at_end == live_game.HomeTeamID:
-            return jsonify({'end': end, 'sog': Live_game_data.home_team_sog}), 200
+            return jsonify({'end': end, 'sog': live_game_data.home_team_sog}), 200
         elif team_shooting_at_end == live_game.AwayTeamID:
-            return jsonify({'end': end, 'sog': Live_game_data.away_team_sog}), 200
+            return jsonify({'end': end, 'sog': live_game_data.away_team_sog}), 200
         else:
             return jsonify({'error': 'Error determining team shooting at this end.'}), 500
 
@@ -795,11 +804,13 @@ def sog_team(end):
             return jsonify({'error': 'SOG value is required.'}), 400
 
         if team_shooting_at_end == live_game.HomeTeamID:
-            Live_game_data.home_team_sog = sog_value
-            updated_sog = Live_game_data.home_team_sog
+            live_game_data.home_team_sog = sog_value
+            updated_sog = live_game_data.home_team_sog
+            socketio.emit('update_value', {'elementId': 'home-sog', 'value': updated_sog})
         elif team_shooting_at_end == live_game.AwayTeamID:
-            Live_game_data.away_team_sog = sog_value
-            updated_sog = Live_game_data.away_team_sog
+            live_game_data.away_team_sog = sog_value
+            updated_sog = live_game_data.away_team_sog
+            socketio.emit('update_value', {'elementId': 'away-sog', 'value': updated_sog})
         else:
             return jsonify({'error': 'Error determining team shooting at this end.'}), 500
 
@@ -993,6 +1004,8 @@ def add_games(team_id):
 
     return jsonify({"message": "Home games added successfully"}), 201
 
+from flask_socketio import emit
+
 @app.route('/api/scoreboard_live_data', methods=['POST'])
 def ingest_scoreboard_data():
     data = request.get_json()
@@ -1002,26 +1015,14 @@ def ingest_scoreboard_data():
     away_score = int(data.get('Away Score', 0))
     clock = data.get('Clock', '20:00')
     period = data.get('Period', '1st')
-    home_penalty_player1 = data.get('homepenplayer1', '')
-    home_penalty_player2 = data.get('homepenplayer2', '')
-    home_penalty_time1 = data.get('homepentime1', '')
-    home_penalty_time2 = data.get('homepentime2', '')
-    away_penalty_player1 = data.get('awaypenplayer1', '')
-    away_penalty_player2 = data.get('awaypenplayer2', '')
-    away_penalty_time1 = data.get('awaypentime1', '')
-    away_penalty_time2 = data.get('awaypentime2', '')
 
-    # Check if there's a live game entry
-    live_game = LiveGame.query.first()  # Adjust the game_id logic based on your application needs
+    live_game = LiveGame.query.first()
 
     if not live_game:
-        # If no live game entry, check if there is a live game in the Game table
         live_game_record = Game.query.filter_by(live=True).first()
-
         if not live_game_record:
             return jsonify({'error': 'No live game found in the Game table.'}), 404
 
-        # Create the LiveGame entry using the live game from the Game table
         live_game = LiveGame(
             game_id=live_game_record.GameID,
             home_team_score=0,
@@ -1032,51 +1033,37 @@ def ingest_scoreboard_data():
         db.session.add(live_game)
         db.session.commit()
 
-        # Reset the scoreboard associated with the live game
-        scoreboard = Scoreboard(
-            home_score=0,
-            away_score=0,
-            clock="20:00",
-            period="1st",
-            home_penalty_player1="",
-            home_penalty_player2="",
-            home_penalty_time1="",
-            home_penalty_time2="",
-            away_penalty_player1="",
-            away_penalty_player2="",
-            away_penalty_time1="",
-            away_penalty_time2="",
-            live_game_id=live_game.id
-        )
-        db.session.add(scoreboard)
+    updates_made = False
+
+    if live_game.home_team_score != home_score:
+        live_game.home_team_score = home_score
+        socketio.emit('update_value', {'elementId': 'home-goals', 'value': home_score})
+        print('Emitting update for home-goals:', home_score)
+        updates_made = True
+
+    if live_game.away_team_score != away_score:
+        live_game.away_team_score = away_score
+        socketio.emit('update_value', {'elementId': 'away-goals', 'value': away_score})
+        print('Emitting update for away-goals:', away_score)
+        updates_made = True
+
+    # Similar checks for period and clock
+
+    if live_game.period != period:
+        live_game.period = period
+        socketio.emit('update_value', {'elementId': 'period-display', 'value': period})
+        print('Emitting update for period-display:', period)
+        updates_made = True
+
+    if live_game.clock != clock:
+        live_game.clock = clock
+        socketio.emit('update_value', {'elementId': 'time-display', 'value': clock})
+        print('Emitting update for time-display:', clock)
+        updates_made = True
+
+    if updates_made:
+        db.session.add(live_game)
         db.session.commit()
-
-    else:
-        # Update the existing scoreboard record associated with the live game
-        scoreboard = live_game.scoreboard
-
-    # Update the scoreboard with the new data
-    scoreboard.home_score = home_score
-    scoreboard.away_score = away_score
-    scoreboard.clock = clock
-    scoreboard.period = period
-    scoreboard.home_penalty_player1 = home_penalty_player1
-    scoreboard.home_penalty_player2 = home_penalty_player2
-    scoreboard.home_penalty_time1 = home_penalty_time1
-    scoreboard.home_penalty_time2 = home_penalty_time2
-    scoreboard.away_penalty_player1 = away_penalty_player1
-    scoreboard.away_penalty_player2 = away_penalty_player2
-    scoreboard.away_penalty_time1 = away_penalty_time1
-    scoreboard.away_penalty_time2 = away_penalty_time2
-
-    # Update the LiveGame model based on Scoreboard data
-    live_game.home_team_score = home_score
-    live_game.away_team_score = away_score
-    live_game.clock = clock
-    live_game.period = period
-
-    db.session.add(scoreboard)
-    db.session.commit()
 
     return jsonify({'message': 'Scoreboard data ingested successfully, LiveGame updated/created'}), 200
 
@@ -1110,4 +1097,4 @@ def get_scoreboard_data():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)

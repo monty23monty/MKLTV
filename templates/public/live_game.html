@@ -5,21 +5,21 @@
     <div class="teams">
         <div class="team home">
             <img src="{{ url_for('static', filename='logos/' + home_team_name + '.png') }}" alt="{{ home_team_name }} Logo" style="max-width: 80px;">
-            <div class="team-name">{{ home_team_name }}</div> <!-- Display actual home team name -->
+            <div class="team-name">{{ home_team_name }}</div>
             <div class="team-score" id="home-goals">{{ live_game.home_team_score }}</div>
-            <div class="penalty-indicator" id="home-penalty"><!-- Penalty Info --></div>
+            <div class="penalty-indicator" id="home-penalty"></div>
         </div>
 
         <div class="timer">
-            <div class="time-display" id="time-display">{{ live_game.clock }}</div> <!-- Corrected from time_remaining to clock -->
+            <div class="time-display" id="time-display">{{ live_game.clock }}</div>
             <div class="period-display" id="period-display">{{ live_game.period }}</div>
         </div>
 
         <div class="team visitor">
             <img src="{{ url_for('static', filename='logos/' + away_team_name + '.png') }}" alt="{{ away_team_name }} Logo" style="max-width: 80px;">
-            <div class="team-name">{{ away_team_name }}</div> <!-- Display actual away team name -->
+            <div class="team-name">{{ away_team_name }}</div>
             <div class="team-score" id="away-goals">{{ live_game.away_team_score }}</div>
-            <div class="penalty-indicator" id="away-penalty"><!-- Penalty Info --></div>
+            <div class="penalty-indicator" id="away-penalty"></div>
         </div>
     </div>
 
@@ -34,4 +34,33 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+<script>
+    const protocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const socket = io.connect(protocol + document.domain + ':' + location.port, {
+        transports: ['websocket']
+    });
+
+
+    // Log connection
+    socket.on('connect', function() {
+        console.log('Connected to server');
+    });
+
+    // Handle score, SOG, period, and clock updates
+    socket.on('update_value', function(data) {
+        console.log('Received update:', data);
+        var elementId = data.elementId;
+        var value = data.value;
+
+        document.getElementById(elementId).textContent = value;
+    });
+
+    // Log disconnection
+    socket.on('disconnect', function() {
+        console.log('Disconnected from server');
+    });
+</script>
+
 {% endblock %}
